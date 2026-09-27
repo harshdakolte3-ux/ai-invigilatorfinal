@@ -21,6 +21,8 @@ const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('All');
   const [page, setPage] = useState(1);
   const [toast, setToast] = useState('');
+  const [viewPdfUrl, setViewPdfUrl] = useState(null);
+  const [viewingStudent, setViewingStudent] = useState(null);
 
 
   useEffect(() => {
@@ -97,196 +99,215 @@ const [loading, setLoading] = useState(true);
     showToast('CSV Exported Successfully');
   };
 
-  const downloadStudentReport = (r) => {
-    import('jspdf').then(async ({ jsPDF }) => {
-      const autoTable = (await import('jspdf-autotable')).default;
-      
-      const doc = new jsPDF();
-      
-      const resultStatus = r.score >= 35 ? "PASSED" : "FAILED";
-      const formattedDate = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(r.submitted_at));
-      
-      const tabSwitching = parseInt(r.tab_switches, 10) || 0;
-      const phoneDetected = parseInt(r.phone_detected, 10) || 0;
-      const multiFaces = parseInt(r.multi_faces, 10) || 0;
-      const fullscreenExits = parseInt(r.fullscreen_exits, 10) || 0;
-      const headMovements = parseInt(r.head_movements, 10) || 0;
-      const noFaceDetected = parseInt(r.no_face_detected, 10) || 0;
-      const eyesClosed = parseInt(r.eyes_closed, 10) || 0;
-      const totalIncidents = tabSwitching + phoneDetected + multiFaces + fullscreenExits + headMovements + noFaceDetected + eyesClosed;
-      
-      let riskScore = 32;
-      let integrityLevel = "MODERATE";
-      if (totalIncidents === 0) {
-          riskScore = 5;
-          integrityLevel = "LOW";
-      } else if (totalIncidents > 5) {
-          riskScore = 78;
-          integrityLevel = "HIGH";
-      }
+  const generatePdf = async (r) => {
+    const { jsPDF } = await import('jspdf');
+    const autoTable = (await import('jspdf-autotable')).default;
+    
+    const doc = new jsPDF();
+    
+    const resultStatus = r.score >= 35 ? "PASSED" : "FAILED";
+    const formattedDate = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(r.submitted_at));
+    
+    const tabSwitching = parseInt(r.tab_switches, 10) || 0;
+    const phoneDetected = parseInt(r.phone_detected, 10) || 0;
+    const multiFaces = parseInt(r.multi_faces, 10) || 0;
+    const fullscreenExits = parseInt(r.fullscreen_exits, 10) || 0;
+    const headMovements = parseInt(r.head_movements, 10) || 0;
+    const noFaceDetected = parseInt(r.no_face_detected, 10) || 0;
+    const eyesClosed = parseInt(r.eyes_closed, 10) || 0;
+    const totalIncidents = tabSwitching + phoneDetected + multiFaces + fullscreenExits + headMovements + noFaceDetected + eyesClosed;
+    
+    let riskScore = 32;
+    let integrityLevel = "MODERATE";
+    if (totalIncidents === 0) {
+        riskScore = 5;
+        integrityLevel = "LOW";
+    } else if (totalIncidents > 5) {
+        riskScore = 78;
+        integrityLevel = "HIGH";
+    }
 
-      // Colors
-      const primaryColor = [0, 74, 198]; 
-      const errorColor = [220, 38, 38];
-      const successColor = [16, 185, 129];
-      const darkText = [30, 41, 59];
-      const lightText = [100, 116, 139];
+    // Colors
+    const primaryColor = [0, 74, 198]; 
+    const errorColor = [220, 38, 38];
+    const successColor = [16, 185, 129];
+    const darkText = [30, 41, 59];
+    const lightText = [100, 116, 139];
 
-      // Header: Logo (Shield) and Title
-      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      
-      // Top-right filled quadrant
-      doc.rect(25, 16, 9, 9, 'F');
-      
-      // Bottom-left filled quadrant
-      doc.rect(16, 25, 9, 2, 'F');
-      doc.triangle(16, 27, 25, 27, 25, 34, 'F');
-      
-      // Shield Outline & Cross
-      doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.setLineWidth(1.5);
-      
-      // Outline
-      doc.line(16, 16, 34, 16); // Top
-      doc.line(34, 16, 34, 27); // Right
-      doc.line(34, 27, 25, 34); // Bottom-right diagonal
-      doc.line(25, 34, 16, 27); // Bottom-left diagonal
-      doc.line(16, 27, 16, 16); // Left
-      
-      // Inner cross
-      doc.line(25, 16, 25, 34); // Vertical
-      doc.line(16, 25, 34, 25); // Horizontal
-      
-      // Titles
-      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.setFontSize(22);
-      doc.setFont("helvetica", "bold");
-      doc.text("AI-Invigilator", 40, 25);
-      
-      doc.setTextColor(lightText[0], lightText[1], lightText[2]);
-      doc.setFontSize(11);
-      doc.setFont("helvetica", "bold");
-      doc.text("EXAMINATION REPORT", 41, 31.5);
-      
-      doc.setDrawColor(226, 232, 240);
-      doc.setLineWidth(0.5);
-      doc.line(15, 40, 195, 40);
+    // Header: Logo (Shield) and Title
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    
+    // Top-right filled quadrant
+    doc.rect(25, 16, 9, 9, 'F');
+    
+    // Bottom-left filled quadrant
+    doc.rect(16, 25, 9, 2, 'F');
+    doc.triangle(16, 27, 25, 27, 25, 34, 'F');
+    
+    // Shield Outline & Cross
+    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setLineWidth(1.5);
+    
+    // Outline
+    doc.line(16, 16, 34, 16); // Top
+    doc.line(34, 16, 34, 27); // Right
+    doc.line(34, 27, 25, 34); // Bottom-right diagonal
+    doc.line(25, 34, 16, 27); // Bottom-left diagonal
+    doc.line(16, 27, 16, 16); // Left
+    
+    // Inner cross
+    doc.line(25, 16, 25, 34); // Vertical
+    doc.line(16, 25, 34, 25); // Horizontal
+    
+    // Titles
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.text("AI-Invigilator", 40, 25);
+    
+    doc.setTextColor(lightText[0], lightText[1], lightText[2]);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("EXAMINATION REPORT", 41, 31.5);
+    
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.5);
+    doc.line(15, 40, 195, 40);
 
-      // Section: Student Info
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text("Student Information", 15, 50);
-      
-      autoTable(doc, {
-        startY: 55,
-        theme: 'plain',
-        styles: { fontSize: 10, cellPadding: 2, textColor: darkText },
-        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40, textColor: lightText } },
-        body: [
-          ['Name:', r.full_name],
-          ['Email:', r.email],
-          ['Enrollment No:', r.student_id || 'N/A'],
-        ],
-      });
+    // Section: Student Info
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Student Information", 15, 50);
+    
+    autoTable(doc, {
+      startY: 55,
+      theme: 'plain',
+      styles: { fontSize: 10, cellPadding: 2, textColor: darkText },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40, textColor: lightText } },
+      body: [
+        ['Name:', r.full_name],
+        ['Email:', r.email],
+        ['Enrollment No:', r.student_id || 'N/A'],
+      ],
+    });
 
-      // Section: Exam Info
-      let finalY = doc.lastAutoTable.finalY + 10;
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text("Examination Details", 15, finalY);
+    // Section: Exam Info
+    let finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Examination Details", 15, finalY);
 
-      autoTable(doc, {
-        startY: finalY + 5,
-        theme: 'plain',
-        styles: { fontSize: 10, cellPadding: 2, textColor: darkText },
-        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40, textColor: lightText } },
-        body: [
-          ['Exam Name:', r.exam_name],
-          ['Date Submitted:', formattedDate],
-          ['Final Score:', `${r.score} / ${r.total_marks}`],
-          ['Result Status:', resultStatus],
-        ],
-      });
+    autoTable(doc, {
+      startY: finalY + 5,
+      theme: 'plain',
+      styles: { fontSize: 10, cellPadding: 2, textColor: darkText },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40, textColor: lightText } },
+      body: [
+        ['Exam Name:', r.exam_name],
+        ['Date Submitted:', formattedDate],
+        ['Final Score:', `${r.score} / ${r.total_marks}`],
+        ['Result Status:', resultStatus],
+      ],
+    });
 
-      // Section: Proctoring Analysis
-      finalY = doc.lastAutoTable.finalY + 15;
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text("AI Proctoring Analysis", 15, finalY);
+    // Section: Proctoring Analysis
+    finalY = doc.lastAutoTable.finalY + 15;
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("AI Proctoring Analysis", 15, finalY);
 
-      autoTable(doc, {
-        startY: finalY + 5,
-        theme: 'striped',
-        headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: 'bold' },
-        styles: { fontSize: 10, cellPadding: 4 },
-        columnStyles: { 2: { fontStyle: 'bold', halign: 'center' } },
-        head: [['Metric', 'Detail', 'Status']],
-        body: [
-          ['Face Presence', noFaceDetected > 0 ? `${noFaceDetected} Incident(s) Not Detected` : 'Verified', noFaceDetected > 0 ? 'FAIL' : 'PASS'],
-          ['Sleeping / Eyes Closed', `${eyesClosed} Incident(s)`, eyesClosed > 0 ? 'FAIL' : 'PASS'],
-          ['Tab Switching', `${tabSwitching} Incident(s)`, tabSwitching > 0 ? 'FAIL' : 'PASS'],
-          ['Mobile Phone Detected', `${phoneDetected} Incident(s)`, phoneDetected > 0 ? 'FAIL' : 'PASS'],
-          ['Multiple Faces Detected', `${multiFaces} Incident(s)`, multiFaces > 0 ? 'FAIL' : 'PASS'],
-          ['Full-Screen Exit', `${fullscreenExits} Incident(s)`, fullscreenExits > 0 ? 'FAIL' : 'PASS'],
-          ['Head Movements', `${headMovements} Incident(s)`, headMovements > 0 ? 'FAIL' : 'PASS'],
-        ],
-        didParseCell: function (data) {
-          if (data.section === 'body' && data.column.index === 2) {
-            if (data.cell.raw === 'PASS') {
-              data.cell.styles.textColor = successColor;
-            } else if (data.cell.raw === 'FAIL') {
-              data.cell.styles.textColor = errorColor;
-            }
+    autoTable(doc, {
+      startY: finalY + 5,
+      theme: 'striped',
+      headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: 'bold' },
+      styles: { fontSize: 10, cellPadding: 4 },
+      columnStyles: { 2: { fontStyle: 'bold', halign: 'center' } },
+      head: [['Metric', 'Detail', 'Status']],
+      body: [
+        ['Face Presence', noFaceDetected > 0 ? `${noFaceDetected} Incident(s) Not Detected` : 'Verified', noFaceDetected > 0 ? 'FAIL' : 'PASS'],
+        ['Sleeping / Eyes Closed', `${eyesClosed} Incident(s)`, eyesClosed > 0 ? 'FAIL' : 'PASS'],
+        ['Tab Switching', `${tabSwitching} Incident(s)`, tabSwitching > 0 ? 'FAIL' : 'PASS'],
+        ['Mobile Phone Detected', `${phoneDetected} Incident(s)`, phoneDetected > 0 ? 'FAIL' : 'PASS'],
+        ['Multiple Faces Detected', `${multiFaces} Incident(s)`, multiFaces > 0 ? 'FAIL' : 'PASS'],
+        ['Full-Screen Exit', `${fullscreenExits} Incident(s)`, fullscreenExits > 0 ? 'FAIL' : 'PASS'],
+        ['Head Movements', `${headMovements} Incident(s)`, headMovements > 0 ? 'FAIL' : 'PASS'],
+      ],
+      didParseCell: function (data) {
+        if (data.section === 'body' && data.column.index === 2) {
+          if (data.cell.raw === 'PASS') {
+            data.cell.styles.textColor = successColor;
+          } else if (data.cell.raw === 'FAIL') {
+            data.cell.styles.textColor = errorColor;
           }
         }
-      });
+      }
+    });
 
-      // Section: Integrity Assessment
-      finalY = doc.lastAutoTable.finalY + 15;
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(darkText[0], darkText[1], darkText[2]);
-      doc.text("Integrity Assessment", 15, finalY);
-      
-      // Draw a box for integrity
-      doc.setFillColor(248, 250, 252);
-      doc.setDrawColor(226, 232, 240);
-      doc.roundedRect(15, finalY + 5, 180, 25, 3, 3, 'FD');
-      
-      doc.setFontSize(10);
-      doc.setTextColor(lightText[0], lightText[1], lightText[2]);
-      doc.text("Risk Score", 20, finalY + 12);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
-      let riskColor = integrityLevel === 'HIGH' ? errorColor : (integrityLevel === 'LOW' ? successColor : [245, 158, 11]);
-      doc.setTextColor(riskColor[0], riskColor[1], riskColor[2]);
-      doc.text(`${riskScore}%`, 20, finalY + 22);
+    // Section: Integrity Assessment
+    finalY = doc.lastAutoTable.finalY + 15;
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(darkText[0], darkText[1], darkText[2]);
+    doc.text("Integrity Assessment", 15, finalY);
+    
+    // Draw a box for integrity
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(15, finalY + 5, 180, 25, 3, 3, 'FD');
+    
+    doc.setFontSize(10);
+    doc.setTextColor(lightText[0], lightText[1], lightText[2]);
+    doc.text("Risk Score", 20, finalY + 12);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    let riskColor = integrityLevel === 'HIGH' ? errorColor : (integrityLevel === 'LOW' ? successColor : [245, 158, 11]);
+    doc.setTextColor(riskColor[0], riskColor[1], riskColor[2]);
+    doc.text(`${riskScore}%`, 20, finalY + 22);
 
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.setTextColor(lightText[0], lightText[1], lightText[2]);
-      doc.text("Integrity Level", 80, finalY + 12);
-      doc.setFontSize(14);
-      doc.setTextColor(riskColor[0], riskColor[1], riskColor[2]);
-      doc.text(`${integrityLevel} RISK`, 80, finalY + 22);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(lightText[0], lightText[1], lightText[2]);
+    doc.text("Integrity Level", 80, finalY + 12);
+    doc.setFontSize(14);
+    doc.setTextColor(riskColor[0], riskColor[1], riskColor[2]);
+    doc.text(`${integrityLevel} RISK`, 80, finalY + 22);
 
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.setTextColor(lightText[0], lightText[1], lightText[2]);
-      doc.text("Total Incidents", 140, finalY + 12);
-      doc.setFontSize(14);
-      doc.setTextColor(darkText[0], darkText[1], darkText[2]);
-      doc.text(`${totalIncidents}`, 140, finalY + 22);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(lightText[0], lightText[1], lightText[2]);
+    doc.text("Total Incidents", 140, finalY + 12);
+    doc.setFontSize(14);
+    doc.setTextColor(darkText[0], darkText[1], darkText[2]);
+    doc.text(`${totalIncidents}`, 140, finalY + 22);
 
-      // Footer
-      doc.setFont("helvetica", "italic");
-      doc.setFontSize(9);
-      doc.setTextColor(lightText[0], lightText[1], lightText[2]);
-      doc.text("Generated securely by the AI Invigilator Proctoring System.", 105, 285, { align: 'center' });
+    // Footer
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9);
+    doc.setTextColor(lightText[0], lightText[1], lightText[2]);
+    doc.text("Generated securely by the AI Invigilator Proctoring System.", 105, 285, { align: 'center' });
 
+    return doc;
+  };
+
+  const downloadStudentReport = async (r) => {
+    try {
+      const doc = await generatePdf(r);
       doc.save(`${r.full_name.replace(/\s+/g, '_')}_Report.pdf`);
       showToast(`Professional Report downloaded for ${r.full_name}`);
-    });
+    } catch (err) {
+      console.error("Download report error:", err);
+    }
+  };
+
+  const viewStudentReport = async (r) => {
+    try {
+      const doc = await generatePdf(r);
+      const blobUrl = doc.output('bloburl');
+      setViewPdfUrl(blobUrl);
+      setViewingStudent(r);
+    } catch (err) {
+      console.error("View report error:", err);
+    }
   };
 
   const goToPage = (p) => setPage(Math.min(Math.max(1, p), totalPages));
@@ -389,7 +410,6 @@ if (loading) {
         <th className="px-lg py-md">Action</th>
     </tr>
 </thead>
-{console.log(pageItems)}
 <tbody className="divide-y divide-outline-variant/20">
       {pageItems.map((r) => (
         <tr key={r.result_id}>
@@ -412,9 +432,22 @@ if (loading) {
             </td>
 
             <td className="px-lg py-md">
-                <button onClick={() => downloadStudentReport(r)} className="bg-blue-500 hover:bg-blue-600 transition-colors text-white px-3 py-2 rounded-lg">
-                    Download Report
-                </button>
+                <div className="flex items-center gap-2">
+                    <button 
+                        onClick={() => viewStudentReport(r)} 
+                        className="bg-emerald-600 hover:bg-emerald-700 transition-colors text-white px-3 py-2 rounded-lg font-medium text-sm flex items-center gap-1 cursor-pointer"
+                    >
+                        <span className="material-symbols-outlined !text-[18px]">visibility</span>
+                        View Report
+                    </button>
+                    <button 
+                        onClick={() => downloadStudentReport(r)} 
+                        className="bg-blue-600 hover:bg-blue-700 transition-colors text-white px-3 py-2 rounded-lg font-medium text-sm flex items-center gap-1 cursor-pointer"
+                    >
+                        <span className="material-symbols-outlined !text-[18px]">download</span>
+                        Download Report
+                    </button>
+                </div>
             </td>
         </tr>
     ))}
@@ -445,6 +478,50 @@ if (loading) {
           </div>
         </div>
       </div>
+
+      {/* PDF View Modal */}
+      {viewPdfUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            {/* Modal Header */}
+            <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">visibility</span>
+                <h3 className="text-white font-bold text-lg">
+                  Report Preview — {viewingStudent?.full_name} ({viewingStudent?.exam_name})
+                </h3>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => downloadStudentReport(viewingStudent)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined !text-[16px]">download</span>
+                  Download PDF
+                </button>
+                <button
+                  onClick={() => {
+                    setViewPdfUrl(null);
+                    setViewingStudent(null);
+                  }}
+                  className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+            </div>
+            
+            {/* PDF Viewer Body */}
+            <div className="flex-1 w-full h-full bg-slate-950 p-2">
+              <iframe
+                src={viewPdfUrl}
+                title="PDF Report Preview"
+                className="w-full h-full rounded-xl border-0"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && (
         <div className="fixed bottom-lg left-1/2 -translate-x-1/2 z-50 toast-animate bg-on-surface text-surface px-lg py-sm rounded-xl shadow-2xl font-label-md text-label-md">
