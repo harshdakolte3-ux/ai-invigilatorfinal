@@ -200,7 +200,14 @@ const [loading, setLoading] = useState(true);
     doc.line(15, 40, 195, 40);
 
     // Student Photo Card on Top Right
-    const photoSrc = r.profile_photo || (r.student_id ? `/uploads/snapshots/student_${r.student_id}.jpg` : null);
+    let photoSrc = r.profile_photo;
+    if (!photoSrc && r.student_id) {
+      photoSrc = `http://localhost:5000/uploads/snapshots/student_${r.student_id}.jpg`;
+    }
+    if (photoSrc && typeof photoSrc === 'string' && !photoSrc.startsWith('data:image') && !photoSrc.startsWith('http')) {
+      photoSrc = `http://localhost:5000${photoSrc.startsWith('/') ? '' : '/'}${photoSrc}`;
+    }
+
     const photoData = await loadImageBase64(photoSrc);
 
     doc.setFillColor(248, 250, 252);
@@ -210,10 +217,13 @@ const [loading, setLoading] = useState(true);
 
     if (photoData) {
       try {
-        const format = photoData.includes('image/png') ? 'PNG' : 'JPEG';
-        doc.addImage(photoData, format, 149.5, 49.5, 39, 43);
+        const isPng = photoData.includes('data:image/png');
+        doc.addImage(photoData, isPng ? 'PNG' : 'JPEG', 149.5, 49.5, 39, 43);
       } catch (imgErr) {
         console.error("Error adding student photo to PDF:", imgErr);
+        try {
+          doc.addImage(photoData, 149.5, 49.5, 39, 43);
+        } catch (e2) {}
       }
     } else {
       doc.setFontSize(8);
