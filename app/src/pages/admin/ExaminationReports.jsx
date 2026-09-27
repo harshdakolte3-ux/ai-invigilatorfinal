@@ -199,15 +199,8 @@ const [loading, setLoading] = useState(true);
     doc.setLineWidth(0.5);
     doc.line(15, 40, 195, 40);
 
-    // Student Photo Card on Top Right
-    let photoSrc = r.profile_photo;
-    if (!photoSrc && r.student_id) {
-      photoSrc = `http://localhost:5000/uploads/snapshots/student_${r.student_id}.jpg`;
-    }
-    if (photoSrc && typeof photoSrc === 'string' && !photoSrc.startsWith('data:image') && !photoSrc.startsWith('http')) {
-      photoSrc = `http://localhost:5000${photoSrc.startsWith('/') ? '' : '/'}${photoSrc}`;
-    }
-
+    // Student Registration Profile Photo on Top Right
+    const photoSrc = r.profile_photo;
     const photoData = await loadImageBase64(photoSrc);
 
     doc.setFillColor(248, 250, 252);
@@ -220,7 +213,7 @@ const [loading, setLoading] = useState(true);
         const isPng = photoData.includes('data:image/png');
         doc.addImage(photoData, isPng ? 'PNG' : 'JPEG', 149.5, 49.5, 39, 43);
       } catch (imgErr) {
-        console.error("Error adding student photo to PDF:", imgErr);
+        console.error("Error adding student profile photo to PDF:", imgErr);
         try {
           doc.addImage(photoData, 149.5, 49.5, 39, 43);
         } catch (e2) {}
@@ -229,13 +222,14 @@ const [loading, setLoading] = useState(true);
       doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(148, 163, 184);
-      doc.text("NO PHOTO", 169, 70, { align: "center" });
+      doc.text("NO PROFILE", 169, 68, { align: "center" });
+      doc.text("PHOTO", 169, 73, { align: "center" });
     }
 
     doc.setFontSize(6);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(100, 116, 139);
-    doc.text("STUDENT BASELINE PHOTO", 169, 96.5, { align: "center" });
+    doc.text("STUDENT PROFILE PHOTO", 169, 96.5, { align: "center" });
 
     // Section: Student Info
     doc.setFontSize(12);
