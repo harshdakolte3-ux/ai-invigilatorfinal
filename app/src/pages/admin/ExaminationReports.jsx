@@ -99,6 +99,31 @@ const [loading, setLoading] = useState(true);
     showToast('CSV Exported Successfully');
   };
 
+  const loadImageBase64 = (src) => {
+    return new Promise((resolve) => {
+      if (!src) return resolve(null);
+      if (typeof src === 'string' && src.startsWith('data:image')) return resolve(src);
+      
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || img.width;
+          canvas.height = img.naturalHeight || img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          const dataURL = canvas.toDataURL('image/jpeg', 0.85);
+          resolve(dataURL);
+        } catch (e) {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  };
+
   const generatePdf = async (r) => {
     const { jsPDF } = await import('jspdf');
     const autoTable = (await import('jspdf-autotable')).default;
@@ -174,13 +199,43 @@ const [loading, setLoading] = useState(true);
     doc.setLineWidth(0.5);
     doc.line(15, 40, 195, 40);
 
+    // Student Photo Card on Top Right
+    const photoSrc = r.profile_photo || (r.student_id ? `/uploads/snapshots/student_${r.student_id}.jpg` : null);
+    const photoData = await loadImageBase64(photoSrc);
+
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(148, 48, 42, 52, 2, 2, 'FD');
+
+    if (photoData) {
+      try {
+        const format = photoData.includes('image/png') ? 'PNG' : 'JPEG';
+        doc.addImage(photoData, format, 149.5, 49.5, 39, 43);
+      } catch (imgErr) {
+        console.error("Error adding student photo to PDF:", imgErr);
+      }
+    } else {
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(148, 163, 184);
+      doc.text("NO PHOTO", 169, 70, { align: "center" });
+    }
+
+    doc.setFontSize(6);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 116, 139);
+    doc.text("STUDENT BASELINE PHOTO", 169, 96.5, { align: "center" });
+
     // Section: Student Info
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
+    doc.setTextColor(darkText[0], darkText[1], darkText[2]);
     doc.text("Student Information", 15, 50);
     
     autoTable(doc, {
       startY: 55,
+      margin: { right: 55 },
       theme: 'plain',
       styles: { fontSize: 10, cellPadding: 2, textColor: darkText },
       columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40, textColor: lightText } },
@@ -195,10 +250,12 @@ const [loading, setLoading] = useState(true);
     let finalY = doc.lastAutoTable.finalY + 10;
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
+    doc.setTextColor(darkText[0], darkText[1], darkText[2]);
     doc.text("Examination Details", 15, finalY);
 
     autoTable(doc, {
       startY: finalY + 5,
+      margin: { right: 55 },
       theme: 'plain',
       styles: { fontSize: 10, cellPadding: 2, textColor: darkText },
       columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40, textColor: lightText } },

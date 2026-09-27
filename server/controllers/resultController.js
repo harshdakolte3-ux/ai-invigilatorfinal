@@ -46,6 +46,7 @@ const result = await pool.query(`
         s.student_id,
         s.full_name,
         s.email,
+        s.profile_photo,
         e.exam_name,
         r.score,
         r.total_marks,
