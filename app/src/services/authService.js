@@ -73,6 +73,11 @@ export async function getQuestions(examId) {
     return response.data.questions;
 }
 
+export async function publishExam(data) {
+    const response = await API.post("/exam/publish", data);
+    return response.data;
+}
+
 export async function reportViolation(data) {
     const response = await API.post("/exam/violation", data);
     return response.data;

@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth.js';
 
 const NAV_ITEMS = [
   { to: '/admin-dashboard', icon: 'dashboard', label: 'Dashboard' },
+  { to: '/admin/exam-generator', icon: 'auto_awesome', label: 'AI Exam Generator' },
   { to: '/admin/live-monitoring', icon: 'videocam', label: 'Live Monitoring' },
   { to: '/admin/violations', icon: 'report_problem', label: 'Violations' },
   { to: '/admin/reports', icon: 'analytics', label: 'Reports' },

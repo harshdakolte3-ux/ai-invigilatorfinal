@@ -17,6 +17,7 @@ import LiveMonitoring from './pages/admin/LiveMonitoring.jsx';
 import ExaminationReports from './pages/admin/ExaminationReports.jsx';
 import IntegrityViolations from './pages/admin/IntegrityViolations.jsx';
 import SystemSettings from './pages/admin/SystemSettings.jsx';
+import AIExamGenerator from './pages/admin/AIExamGenerator.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 
 function App() {
@@ -60,6 +61,19 @@ function App() {
               <AdminOverview protectedMode={true} />
             </AdminProtectedRoute>
           }
+        />
+
+        <Route
+          path="/admin/exam-generator"
+          element={
+            <AdminProtectedRoute>
+              <AIExamGenerator />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin-exam-generator"
+          element={<AIExamGenerator protectedMode={false} />}
         />
 
         <Route
