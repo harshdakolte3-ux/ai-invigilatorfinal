@@ -1004,7 +1004,7 @@ function generateCurriculumQuestions(topic, difficulty, config) {
     });
   }
 
-  // Descriptive & Rubric Questions
+  // descriptive & rubric Questions
   const descTemplates = [
     {
       q: `Critically explain the difference between Paging and Segmentation in Virtual Memory. Under what conditions does external vs internal fragmentation emerge, and how do multi-level page tables mitigate memory footprint?`,
