@@ -9,7 +9,19 @@ import {
   getAdminSession,
 } from '../services/authService.js';
 
-export const AuthContext = createContext(null);
+const defaultAuth = {
+  student: getStudentSession(),
+  isStudentAuthenticated: Boolean(getStudentSession()),
+  studentLogin: async () => {},
+  studentRegister: async () => {},
+  studentLogout: () => {},
+  admin: getAdminSession(),
+  isAdminAuthenticated: Boolean(getAdminSession()),
+  adminLogin: async () => {},
+  adminLogout: () => {},
+};
+
+export const AuthContext = createContext(defaultAuth);
 
 export function AuthProvider({ children }) {
   const [student, setStudent] = useState(() => getStudentSession());

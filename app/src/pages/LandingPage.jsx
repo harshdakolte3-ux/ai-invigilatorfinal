@@ -5,7 +5,6 @@ import MoltenMetal from '../components/MoltenMetal';
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showHelpCenter, setShowHelpCenter] = useState(false);
   const [activeModal, setActiveModal] = useState(null);
@@ -180,9 +179,6 @@ const LandingPage = () => {
                 <button onClick={() => navigate('/student-login')} className="gradient-button-primary text-white px-8 py-4 rounded-xl font-semibold flex items-center gap-sm btn-animate shadow-xl border border-white/20">
                   Launch Assessment <span className="material-symbols-outlined">arrow_forward</span>
                 </button>
-                <button onClick={() => setIsVideoModalOpen(true)} className="bg-white/90 px-8 py-4 rounded-xl font-extrabold text-slate-900 border border-white/50 hover:bg-white flex items-center gap-sm btn-animate shadow-xl backdrop-blur-md transition-all">
-                  Request Demo <span className="material-symbols-outlined">play_circle</span>
-                </button>
               </div>
               
               <div className="flex items-center gap-xl pt-lg">
@@ -319,34 +315,6 @@ const LandingPage = () => {
         </div>
       </footer>
 
-      {/* Video Demo Modal */}
-      {isVideoModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="relative w-full max-w-4xl bg-surface rounded-2xl border border-white/20 shadow-2xl overflow-hidden">
-            <div className="flex justify-between items-center p-4 border-b border-white/10 bg-slate-900">
-              <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">visibility</span>
-                AI Exam Proctoring Demo
-              </h3>
-              <button 
-                onClick={() => setIsVideoModalOpen(false)}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors text-white"
-              >
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-            <div className="relative pt-[56.25%] bg-black flex items-center justify-center">
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-white/20 m-4 rounded-xl">
-                <span className="material-symbols-outlined text-6xl text-white/50 mb-4">videocam</span>
-                <h4 className="text-xl font-bold text-white mb-2">Video Placeholder</h4>
-                <p className="text-white/70 max-w-md">
-                  As an AI, I cannot generate MP4 video files of your software. Please record a 2-minute screen capture of your app in action (login, exam start, alerts), name it <strong>demo.mp4</strong>, and place it in your <strong>public</strong> folder.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Help Center Modal */}
       {showHelpCenter && (
