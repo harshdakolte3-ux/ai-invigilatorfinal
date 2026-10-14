@@ -24,7 +24,7 @@ const StudentLogin = () => {
       await studentLogin({ email, password });
       navigate('/student-dashboard');
     } catch (err) {
-      setError(err.message || 'Unable to sign in. Please try again.');
+      setError(err.response?.data?.message || err.message || 'Unable to sign in. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

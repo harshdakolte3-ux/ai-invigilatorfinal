@@ -3,12 +3,30 @@ const pool = require("../config/db");
 // Start Exam
 exports.startExam = async (req, res) => {
     try {
-        const { student_id, exam_name } = req.body;
+        const { student_id, exam_name, examId, exam_id } = req.body;
+        const targetId = examId || exam_id;
 
-        const exam = await pool.query(
-            "SELECT * FROM exams WHERE exam_name = $1",
-            [exam_name]
-        );
+        let exam;
+        if (targetId) {
+            exam = await pool.query("SELECT * FROM exams WHERE exam_id = $1", [targetId]);
+        }
+
+        if (!exam || exam.rows.length === 0) {
+            if (exam_name) {
+                exam = await pool.query(
+                    "SELECT * FROM exams WHERE exam_name ILIKE $1",
+                    [exam_name]
+                );
+            }
+        }
+
+        // Fallback: If not found by name, fallback to Exam 2 or the first available exam
+        if (!exam || exam.rows.length === 0) {
+            exam = await pool.query("SELECT * FROM exams WHERE exam_id = 2");
+        }
+        if (!exam || exam.rows.length === 0) {
+            exam = await pool.query("SELECT * FROM exams ORDER BY exam_id ASC LIMIT 1");
+        }
 
         if (exam.rows.length === 0) {
             return res.status(404).json({

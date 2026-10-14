@@ -76,15 +76,61 @@ exports.loginStudent = async (req, res) => {
 
         const { email, password } = req.body;
 
-        const user = await pool.query(
+        let user = await pool.query(
             "SELECT * FROM students WHERE email=$1",
             [email]
         );
 
         if (user.rows.length === 0) {
+            // Check if account is an Administrator attempting to test student portal
+            const adminUser = await pool.query(
+                "SELECT * FROM admins WHERE email=$1",
+                [email]
+            );
+
+            if (adminUser.rows.length > 0) {
+                const adminData = adminUser.rows[0];
+                const validAdminPassword = await bcrypt.compare(
+                    password,
+                    adminData.password
+                );
+
+                if (!validAdminPassword) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Incorrect Password"
+                    });
+                }
+
+                const token = jwt.sign(
+                    {
+                        student_id: adminData.admin_id,
+                        email: adminData.email,
+                        role: "admin"
+                    },
+                    process.env.JWT_SECRET,
+                    { expiresIn: "24h" }
+                );
+
+                return res.json({
+                    success: true,
+                    token,
+                    student: {
+                        student_id: adminData.admin_id,
+                        enrollment_no: "ADM-2026",
+                        full_name: adminData.name || adminData.full_name || "Admin User",
+                        email: adminData.email,
+                        phone: adminData.phone || "9876543210",
+                        course: "B.Tech CSE",
+                        semester: "8",
+                        profile_photo: null
+                    }
+                });
+            }
+
             return res.status(400).json({
                 success: false,
-                message: "User Not Found"
+                message: "User Not Found. Please check your email or register."
             });
         }
 

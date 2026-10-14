@@ -35,6 +35,11 @@ const result = await pool.query(`
     WITH result_boundaries AS (
         SELECT 
             r.result_id,
+            r.student_id,
+            r.exam_id,
+            r.score,
+            r.total_marks,
+            r.submitted_at,
             COALESCE(
                 LAG(r.submitted_at) OVER (PARTITION BY r.student_id, r.exam_id ORDER BY r.submitted_at), 
                 '1970-01-01'::timestamp
@@ -42,50 +47,34 @@ const result = await pool.query(`
         FROM results r
     )
     SELECT
-        r.result_id,
+        b.result_id,
         s.student_id,
         s.full_name,
         s.email,
         s.profile_photo,
         e.exam_name,
-        r.score,
-        r.total_marks,
-        r.submitted_at,
-        (SELECT COUNT(*) FROM exam_incidents i 
-         WHERE i.student_id = r.student_id AND i.exam_id = r.exam_id AND i.incident_type ILIKE '%tab%'
-         AND i.created_at <= r.submitted_at 
-         AND i.created_at > b.previous_submitted_at) as tab_switches,
-        (SELECT COUNT(*) FROM exam_incidents i 
-         WHERE i.student_id = r.student_id AND i.exam_id = r.exam_id AND (i.incident_type ILIKE '%phone%' OR i.incident_type ILIKE '%mobile%')
-         AND i.created_at <= r.submitted_at 
-         AND i.created_at > b.previous_submitted_at) as phone_detected,
-        (SELECT COUNT(*) FROM exam_incidents i 
-         WHERE i.student_id = r.student_id AND i.exam_id = r.exam_id AND i.incident_type ILIKE '%multi%'
-         AND i.created_at <= r.submitted_at 
-         AND i.created_at > b.previous_submitted_at) as multi_faces,
-        (SELECT COUNT(*) FROM exam_incidents i 
-         WHERE i.student_id = r.student_id AND i.exam_id = r.exam_id AND (i.incident_type ILIKE '%screen%' OR i.incident_type ILIKE '%exit%')
-         AND i.created_at <= r.submitted_at 
-         AND i.created_at > b.previous_submitted_at) as fullscreen_exits,
-        (SELECT COUNT(*) FROM exam_incidents i 
-         WHERE i.student_id = r.student_id AND i.exam_id = r.exam_id AND i.incident_type ILIKE '%look%'
-         AND i.created_at <= r.submitted_at 
-         AND i.created_at > b.previous_submitted_at) as head_movements,
-        (SELECT COUNT(*) FROM exam_incidents i 
-         WHERE i.student_id = r.student_id AND i.exam_id = r.exam_id AND i.incident_type ILIKE '%face_not_detected%'
-         AND i.created_at <= r.submitted_at 
-         AND i.created_at > b.previous_submitted_at) as no_face_detected,
-        (SELECT COUNT(*) FROM exam_incidents i 
-         WHERE i.student_id = r.student_id AND i.exam_id = r.exam_id AND i.incident_type ILIKE '%sleep%'
-         AND i.created_at <= r.submitted_at 
-         AND i.created_at > b.previous_submitted_at) as eyes_closed
-    FROM results r
-    JOIN result_boundaries b ON r.result_id = b.result_id
-    JOIN students s
-        ON r.student_id = s.student_id
-    JOIN exams e
-        ON r.exam_id = e.exam_id
-    ORDER BY r.submitted_at DESC
+        b.score,
+        b.total_marks,
+        b.submitted_at,
+        COUNT(CASE WHEN i.incident_type ILIKE '%tab%' THEN 1 END)::int as tab_switches,
+        COUNT(CASE WHEN i.incident_type ILIKE '%phone%' OR i.incident_type ILIKE '%mobile%' THEN 1 END)::int as phone_detected,
+        COUNT(CASE WHEN i.incident_type ILIKE '%multi%' THEN 1 END)::int as multi_faces,
+        COUNT(CASE WHEN i.incident_type ILIKE '%screen%' OR i.incident_type ILIKE '%exit%' THEN 1 END)::int as fullscreen_exits,
+        COUNT(CASE WHEN i.incident_type ILIKE '%look%' THEN 1 END)::int as head_movements,
+        COUNT(CASE WHEN i.incident_type ILIKE '%face_not_detected%' THEN 1 END)::int as no_face_detected,
+        COUNT(CASE WHEN i.incident_type ILIKE '%sleep%' THEN 1 END)::int as eyes_closed
+    FROM result_boundaries b
+    JOIN students s ON b.student_id = s.student_id
+    JOIN exams e ON b.exam_id = e.exam_id
+    LEFT JOIN exam_incidents i 
+        ON i.student_id = b.student_id 
+        AND i.exam_id = b.exam_id 
+        AND i.created_at <= b.submitted_at 
+        AND i.created_at > b.previous_submitted_at
+    GROUP BY 
+        b.result_id, s.student_id, s.full_name, s.email, s.profile_photo, e.exam_name, b.score, b.total_marks, b.submitted_at
+    ORDER BY b.submitted_at DESC
+    LIMIT 100
 `);
         res.json(result.rows);
     } catch (error) {
