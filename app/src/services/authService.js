@@ -178,3 +178,12 @@ export const createSession = async (data) => {
     });
     return await response.json();
 };
+
+export const publishExam = async (data) => {
+    const response = await fetch("http://localhost:5000/api/exam/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    });
+    return await response.json();
+};
