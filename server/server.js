@@ -19,20 +19,23 @@ app.use('/uploads', express.static('uploads'));
 
 // Student APIs
 app.use("/api/auth", authRoutes);
-
+app.use("/auth", authRoutes);
 
 // Admin APIs
 app.use("/api/admin", adminRoutes);
-
+app.use("/admin", adminRoutes);
     
 // Exam APIs
 app.use("/api/exam", examRoutes);
+app.use("/exam", examRoutes);
 
 // Result APIs
 app.use("/api/result", resultRoutes);
+app.use("/result", resultRoutes);
 
 // Proctor APIs
 app.use("/api/proctor", proctorRoutes);
+app.use("/proctor", proctorRoutes);
 
 app.get("/", (req,res)=>{
     res.send("AI Invigilator Backend Running Successfully");
