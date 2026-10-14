@@ -59,7 +59,8 @@ app.get("/test-db", async(req,res)=>{
 
         res.status(500).json({
             success:false,
-            message:"Database Connection Failed"
+            message:"Database Connection Failed",
+            error: error.message
         });
     }
 });
