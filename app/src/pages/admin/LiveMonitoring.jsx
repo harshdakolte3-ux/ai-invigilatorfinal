@@ -10,8 +10,10 @@ import {
 
 const STATUS_FILTERS = ['All', 'Normal', 'Warning', 'Suspicious'];
 
+let cachedLiveStudents = null;
+
 const LiveMonitoring = () => {
-  const [students, setStudents] = useState([]);
+  const [students, setStudents] = useState(() => cachedLiveStudents || []);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -87,7 +89,7 @@ const LiveMonitoring = () => {
     try {
       const res = await getLiveSessions();
       if (res.success && res.sessions) {
-        setStudents(res.sessions.map((s) => ({
+        const mapped = res.sessions.map((s) => ({
           id: s.id,
           name: s.name || `Student #${s.id}`,
           enrollmentNo: s.enrollmentNo || `20260${s.id}`,
@@ -106,7 +108,9 @@ const LiveMonitoring = () => {
           profilePhoto: s.profilePhoto,
           violationCount: parseInt(s.violationCount, 10) || 0,
           lastPing: s.lastPing
-        })));
+        }));
+        cachedLiveStudents = mapped;
+        setStudents(mapped);
         setLastSync(new Date());
       }
     } catch (e) {

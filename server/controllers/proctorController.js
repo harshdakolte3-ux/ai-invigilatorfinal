@@ -77,6 +77,7 @@ exports.getAllIncidents = async (req, res) => {
             FROM exam_incidents i
             JOIN students s ON i.student_id = s.student_id
             ORDER BY i.created_at DESC
+            LIMIT 200
         `;
         const result = await pool.query(query);
         res.json({
@@ -236,9 +237,14 @@ exports.getLiveSessions = async (req, res) => {
                 s.course,
                 s.semester,
                 s.profile_photo as "profilePhoto",
-                (SELECT COUNT(*) FROM exam_incidents i WHERE i.student_id = l.student_id) as "violationCount"
+                COALESCE(ic.v_count, 0)::int as "violationCount"
             FROM live_sessions l
             JOIN students s ON l.student_id = s.student_id
+            LEFT JOIN (
+                SELECT student_id, COUNT(*) as v_count 
+                FROM exam_incidents 
+                GROUP BY student_id
+            ) ic ON ic.student_id = l.student_id
             ORDER BY 
                 CASE 
                     WHEN l.status = 'Flagged' OR l.status = 'Suspicious' THEN 1
@@ -246,6 +252,7 @@ exports.getLiveSessions = async (req, res) => {
                     ELSE 3
                 END,
                 l.last_ping DESC
+            LIMIT 50
         `;
         const result = await pool.query(query);
         res.json({
@@ -359,55 +366,48 @@ exports.flagSession = async (req, res) => {
 
 exports.getDashboardStats = async (req, res) => {
     try {
-        // 1. Online students
-        const onlineRes = await pool.query("SELECT COUNT(*) FROM live_sessions WHERE last_ping >= NOW() - INTERVAL '15 seconds'");
+        const [onlineRes, examsRes, violationsRes, statsRes, recentRes, previewRes] = await Promise.all([
+            pool.query("SELECT COUNT(*) FROM live_sessions WHERE last_ping >= NOW() - INTERVAL '15 seconds'"),
+            pool.query("SELECT COUNT(DISTINCT exam_name) FROM live_sessions WHERE last_ping >= NOW() - INTERVAL '15 seconds'"),
+            pool.query(`
+                SELECT 
+                    COUNT(*) as total,
+                    SUM(CASE WHEN created_at::date = CURRENT_DATE THEN 1 ELSE 0 END) as today
+                FROM exam_incidents
+            `),
+            pool.query(`
+                SELECT incident_type, COUNT(*) as count 
+                FROM exam_incidents 
+                GROUP BY incident_type
+            `),
+            pool.query(`
+                SELECT e.id, e.incident_type, e.message, e.created_at as timestamp, s.full_name as name, e.student_id
+                FROM exam_incidents e
+                JOIN students s ON e.student_id = s.student_id
+                ORDER BY e.created_at DESC
+                LIMIT 5
+            `),
+            pool.query(`
+                SELECT 
+                    l.student_id as id,
+                    l.exam_name as exam,
+                    l.status,
+                    s.full_name as name,
+                    (SELECT COUNT(*) FROM exam_incidents i WHERE i.student_id = l.student_id) as "violationCount"
+                FROM live_sessions l
+                JOIN students s ON l.student_id = s.student_id
+                WHERE l.last_ping >= NOW() - INTERVAL '15 seconds'
+                LIMIT 5
+            `)
+        ]);
+
         const onlineStudents = parseInt(onlineRes.rows[0].count, 10);
-
-        // 2. Active exams
-        const examsRes = await pool.query("SELECT COUNT(DISTINCT exam_name) FROM live_sessions WHERE last_ping >= NOW() - INTERVAL '15 seconds'");
         const activeExams = parseInt(examsRes.rows[0].count, 10);
-
-        // 3. Total violations & Today's alerts
-        const violationsRes = await pool.query(`
-            SELECT 
-                COUNT(*) as total,
-                SUM(CASE WHEN created_at::date = CURRENT_DATE THEN 1 ELSE 0 END) as today
-            FROM exam_incidents
-        `);
         const totalViolations = parseInt(violationsRes.rows[0].total, 10) || 0;
         const todaysAlerts = parseInt(violationsRes.rows[0].today, 10) || 0;
-
-        // 4. Violation stats by type
-        const statsRes = await pool.query(`
-            SELECT incident_type, COUNT(*) as count 
-            FROM exam_incidents 
-            GROUP BY incident_type
-        `);
         const violationStats = statsRes.rows;
-
-        // 5. Recent alerts (last 5)
-        const recentRes = await pool.query(`
-            SELECT e.id, e.incident_type, e.message, e.created_at as timestamp, s.full_name as name, e.student_id
-            FROM exam_incidents e
-            JOIN students s ON e.student_id = s.student_id
-            ORDER BY e.created_at DESC
-            LIMIT 5
-        `);
         const recentAlerts = recentRes.rows;
-
-        // 6. 5 Live students for the preview table
-        const previewRes = await pool.query(`
-            SELECT 
-                l.student_id as id,
-                l.exam_name as exam,
-                l.status,
-                s.full_name as name,
-                (SELECT COUNT(*) FROM exam_incidents i WHERE i.student_id = l.student_id) as "violationCount"
-            FROM live_sessions l
-            JOIN students s ON l.student_id = s.student_id
-            WHERE l.last_ping >= NOW() - INTERVAL '15 seconds'
-            LIMIT 5
-        `);
+        const previewStudents = previewRes.rows;
 
         res.json({
             success: true,
@@ -417,7 +417,7 @@ exports.getDashboardStats = async (req, res) => {
             todaysAlerts,
             violationStats,
             recentAlerts,
-            previewStudents: previewRes.rows
+            previewStudents
         });
     } catch (err) {
         console.error("Error getting dashboard stats:", err);

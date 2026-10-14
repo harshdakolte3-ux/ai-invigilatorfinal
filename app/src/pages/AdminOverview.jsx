@@ -5,11 +5,13 @@ import AdminSidebar from '../components/admin/AdminSidebar.jsx';
 import ThemeToggle from '../components/ThemeToggle';
 import { getDashboardStats, createSession } from '../services/authService';
 
+let cachedStats = null;
+
 const AdminOverview = ({ protectedMode = false }) => {
   const navigate = useNavigate();
   const { admin, adminLogout } = useAuth();
 
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState(() => cachedStats || {
     onlineStudents: 0,
     activeExams: 0,
     totalViolations: 0,
@@ -24,6 +26,7 @@ const AdminOverview = ({ protectedMode = false }) => {
       try {
         const res = await getDashboardStats();
         if (res.success) {
+          cachedStats = res;
           setStats(res);
         }
       } catch (err) {

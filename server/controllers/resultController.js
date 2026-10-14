@@ -74,7 +74,7 @@ const result = await pool.query(`
     GROUP BY 
         b.result_id, s.student_id, s.full_name, s.email, s.profile_photo, e.exam_name, b.score, b.total_marks, b.submitted_at
     ORDER BY b.submitted_at DESC
-    LIMIT 100
+    LIMIT 50
 `);
         res.json(result.rows);
     } catch (error) {

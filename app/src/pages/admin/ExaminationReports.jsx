@@ -13,9 +13,11 @@ const STATUS_STYLES = {
 
 const PAGE_SIZE = 8;
 
+let cachedReports = null;
+
 const ExaminationReports = () => {
-const [reports, setReports] = useState([]);
-const [loading, setLoading] = useState(true);
+  const [reports, setReports] = useState(() => cachedReports || []);
+  const [loading, setLoading] = useState(() => !cachedReports);
   const [search, setSearch] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -24,15 +26,14 @@ const [loading, setLoading] = useState(true);
   const [viewPdfUrl, setViewPdfUrl] = useState(null);
   const [viewingStudent, setViewingStudent] = useState(null);
 
-
   useEffect(() => {
     const loadResults = async () => {
         try {
             const data = await getAllResults();
-
-            console.log(data);
-
-            setReports(data);
+            if (Array.isArray(data)) {
+                cachedReports = data;
+                setReports(data);
+            }
         } catch (error) {
             console.log(error);
         } finally {

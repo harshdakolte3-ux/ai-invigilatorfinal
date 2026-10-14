@@ -20,8 +20,10 @@ const STATUS_STYLES = {
 
 const PAGE_SIZE = 8;
 
+let cachedViolations = null;
+
 const IntegrityViolations = () => {
-  const [violations, setViolations] = useState([]);
+  const [violations, setViolations] = useState(() => cachedViolations || []);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -32,7 +34,8 @@ const IntegrityViolations = () => {
   const loadIncidents = async () => {
     try {
       const data = await getAllIncidents();
-      if (data && data.success) {
+      if (data && data.success && Array.isArray(data.incidents)) {
+        cachedViolations = data.incidents;
         setViolations(data.incidents);
       }
     } catch (error) {
