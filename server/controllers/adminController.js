@@ -47,7 +47,7 @@ exports.adminLogin = async(req,res)=>{
                 admin_id:admin.rows[0].admin_id,
                 email:admin.rows[0].email
             },
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET || "AIInvigilatorSecretKey",
             {
                 expiresIn:"24h"
             }

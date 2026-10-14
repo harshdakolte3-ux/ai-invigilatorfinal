@@ -108,7 +108,7 @@ exports.loginStudent = async (req, res) => {
                         email: adminData.email,
                         role: "admin"
                     },
-                    process.env.JWT_SECRET,
+                    process.env.JWT_SECRET || "AIInvigilatorSecretKey",
                     { expiresIn: "24h" }
                 );
 
@@ -151,7 +151,7 @@ exports.loginStudent = async (req, res) => {
     student_id: user.rows[0].student_id,
     email: user.rows[0].email
 },
-process.env.JWT_SECRET,
+process.env.JWT_SECRET || "AIInvigilatorSecretKey",
 { expiresIn: "24h" }
 );
 
