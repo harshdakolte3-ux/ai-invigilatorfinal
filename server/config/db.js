@@ -17,7 +17,7 @@ const cloudPool = new Pool({
   ssl: {
     rejectUnauthorized: false,
   },
-  connectionTimeoutMillis: 3500,
+  connectionTimeoutMillis: 2000,
 });
 
 const localPool = new Pool({
@@ -31,13 +31,20 @@ const localPool = new Pool({
 let useLocal = false;
 
 const isNetworkError = (err) => {
+  if (!err) return false;
+  const msg = (err.message || "").toLowerCase();
+  const code = err.code || "";
+  const name = err.name || "";
   return (
-    err &&
-    (err.name === "AggregateError" ||
-      err.code === "ENOTFOUND" ||
-      err.code === "ENETUNREACH" ||
-      err.code === "ETIMEDOUT" ||
-      err.code === "ECONNREFUSED")
+    name === "AggregateError" ||
+    code === "ENOTFOUND" ||
+    code === "ENETUNREACH" ||
+    code === "ETIMEDOUT" ||
+    code === "ECONNREFUSED" ||
+    msg.includes("timeout") ||
+    msg.includes("terminated") ||
+    msg.includes("unreachable") ||
+    msg.includes("failed to connect")
   );
 };
 
