@@ -4,7 +4,7 @@ require("dotenv").config({ path: path.join(__dirname, "../.env") });
 
 const cloudConnectionString =
   process.env.DATABASE_URL ||
-  "postgresql://postgres:harshda%4020082817@db.swcqnklgfprmpamibvxe.supabase.co:5432/postgres";
+  "postgresql://postgres.swcqnklgfprmpamibvxe:harshda%4020082817@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres";
 
 const cloudPool = new Pool({
   connectionString: cloudConnectionString,
