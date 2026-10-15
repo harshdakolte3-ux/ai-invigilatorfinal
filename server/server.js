@@ -60,9 +60,33 @@ app.get("/test-db", async(req,res)=>{
         res.status(500).json({
             success:false,
             message:"Database Connection Failed",
-            error: error.message
+            error: error ? (error.message || String(error)) : "Unknown error"
         });
     }
+});
+
+app.get("/test-supabase", async (req, res) => {
+    const { Pool } = require("pg");
+    const results = {};
+    const testConfigs = [
+        { name: "direct", url: "postgresql://postgres:harshda%4020082817@db.swcqnklgfprmpamibvxe.supabase.co:5432/postgres" },
+        { name: "pooler_ne1_6543", url: "postgresql://postgres.swcqnklgfprmpamibvxe:harshda%4020082817@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres" },
+        { name: "pooler_ne1_5432", url: "postgresql://postgres.swcqnklgfprmpamibvxe:harshda%4020082817@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres" },
+        { name: "pooler_s1_6543", url: "postgresql://postgres.swcqnklgfprmpamibvxe:harshda%4020082817@aws-0-ap-south-1.pooler.supabase.com:6543/postgres" },
+        { name: "pooler_se1_6543", url: "postgresql://postgres.swcqnklgfprmpamibvxe:harshda%4020082817@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres" },
+    ];
+    for (const cfg of testConfigs) {
+        const p = new Pool({ connectionString: cfg.url, ssl: { rejectUnauthorized: false }, connectionTimeoutMillis: 3500 });
+        try {
+            const r = await p.query("SELECT NOW()");
+            results[cfg.name] = { success: true, time: r.rows[0] };
+        } catch (e) {
+            results[cfg.name] = { success: false, error: e.message, code: e.code };
+        } finally {
+            await p.end().catch(() => {});
+        }
+    }
+    res.json(results);
 });
 
 
