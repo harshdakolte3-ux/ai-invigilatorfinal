@@ -30,3 +30,10 @@ build/
 *.sln
 *.sw?
 .DS_Store
+
+# Temporary uploads and student snapshots
+server/uploads/incidents/*
+!server/uploads/incidents/.gitkeep
+server/uploads/snapshots/*
+!server/uploads/snapshots/.gitkeep
+uploads/
