@@ -59,7 +59,7 @@ const IntegrityViolations = () => {
 
   const filtered = useMemo(() => {
     return violations.filter((v) => {
-      const matchesSearch = !search || v.studentName.toLowerCase().includes(search.toLowerCase());
+      const matchesSearch = !search || (v.studentName || '').toLowerCase().includes(search.toLowerCase());
       const matchesType = typeFilter === 'All' || v.type === typeFilter;
       const matchesStatus = statusFilter === 'All' || v.status === statusFilter;
       return matchesSearch && matchesType && matchesStatus;

@@ -21,7 +21,7 @@ const StudentLogin = () => {
     setError('');
     setIsSubmitting(true);
     try {
-      await studentLogin({ email, password });
+      await studentLogin({ email: email.trim(), password });
       navigate('/student-dashboard');
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Unable to sign in. Please try again.');
@@ -38,14 +38,11 @@ const StudentLogin = () => {
       <style dangerouslySetInnerHTML={{
         __html: `
         .glass-card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-        }
-        .dark .glass-card {
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid rgba(71, 85, 105, 0.5);
+            background: rgba(11, 17, 32, 0.78);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(59, 130, 246, 0.22);
+            box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
         }
         .primary-gradient {
             background: linear-gradient(135deg, #004ac6 0%, #712ae2 100%);
@@ -85,15 +82,23 @@ const StudentLogin = () => {
       <div ref={particleContainerRef} className="hidden"></div>
 
       {/* Top Navigation Anchor */}
-      <header className="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-outline-variant/30 shadow-sm">
+      <header className="fixed top-0 w-full z-50 bg-slate-950/75 backdrop-blur-xl border-b border-blue-500/20 shadow-md">
         <div className="flex justify-between items-center h-16 px-gutter max-w-container-max mx-auto">
-          <button type="button" onClick={() => navigate('/')} className="font-headline-md text-headline-md font-bold text-primary cursor-pointer hover:opacity-80 active:scale-95 transition-all">AI-Invigilator</button>
-          <div className="flex gap-md">
-            <button onClick={() => navigate('/admin-login')} className="text-on-surface-variant font-label-md text-label-md hover:bg-primary/5 px-md py-sm rounded-lg transition-colors cursor-pointer active:scale-95 transition-transform">
-              Admin Login
+          <div className="flex items-center gap-sm">
+            <button type="button" onClick={() => navigate('/')} className="font-headline-md text-headline-md font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-sky-400 cursor-pointer hover:opacity-80 active:scale-95 transition-all">
+              AI-Invigilator
             </button>
-            <button className="bg-primary-container text-on-primary-container font-label-md text-label-md px-md py-sm rounded-lg shadow-sm cursor-pointer active:scale-95 transition-transform">
-              Student Login
+            <span className="text-xs uppercase tracking-wider font-bold text-blue-400 bg-blue-500/15 border border-blue-500/30 px-2.5 py-0.5 rounded-full hidden sm:inline-block">
+              Student Examination Portal
+            </span>
+          </div>
+          <div className="flex items-center gap-md">
+            <button 
+              onClick={() => navigate('/')} 
+              className="flex items-center gap-xs text-slate-300 hover:text-white hover:bg-white/10 px-md py-sm rounded-xl transition-all cursor-pointer active:scale-95 text-sm font-medium"
+            >
+              <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+              Back to Home
             </button>
           </div>
         </div>
@@ -103,51 +108,49 @@ const StudentLogin = () => {
       <main className="flex-grow flex items-center justify-center pt-16 relative overflow-hidden z-10">
         {/* Ambient Atmosphere */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-secondary/5 blur-[120px]"></div>
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[120px]"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-500/10 blur-[120px]"></div>
         </div>
 
         {/* Centered Glassmorphism Card */}
         <div className="relative z-10 w-full max-w-[480px] p-md">
-          <div className="glass-card rounded-[32px] p-xl shadow-sm border border-outline-variant/30">
+          <div className="glass-card rounded-[32px] p-xl shadow-2xl border border-blue-500/30">
             
             {/* Branding & Identity */}
             <div className="text-center mb-lg">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl primary-gradient text-white mb-md shadow-md">
-                <span className="material-symbols-outlined !text-[32px]" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white mb-md shadow-lg shadow-blue-500/25">
+                <span className="material-symbols-outlined !text-[32px]" style={{ fontVariationSettings: "'FILL' 1" }}>school</span>
               </div>
-              <h1 className="font-headline-lg text-headline-lg text-slate-900 mb-xs">Welcome Back</h1>
-              <p className="font-body-md text-body-md text-slate-600">Secure Session Authentication</p>
+              <h1 className="font-headline-lg text-headline-lg text-white mb-xs font-bold">Student Sign In</h1>
+              <p className="font-body-md text-body-md text-slate-300">Access your scheduled examination sessions</p>
             </div>
 
             {/* Success Message: Registration */}
             {registeredMessage && (
-              <div className="mb-lg p-md bg-green-100/50 border border-green-200 rounded-xl flex gap-md items-start">
-                <span className="material-symbols-outlined text-green-600 !text-[20px]">check_circle</span>
-                <p className="font-body-md text-body-md text-green-800">{registeredMessage}</p>
+              <div className="mb-lg p-md bg-emerald-500/15 border border-emerald-500/30 rounded-xl flex gap-md items-start text-emerald-300">
+                <span className="material-symbols-outlined text-emerald-400 !text-[20px]">check_circle</span>
+                <p className="font-body-md text-body-md">{registeredMessage}</p>
               </div>
             )}
 
             {/* Error Message */}
             {error && (
-              <div className="mb-lg p-md bg-red-100/50 border border-red-200 rounded-xl flex gap-md items-start">
-                <span className="material-symbols-outlined text-red-600 !text-[20px]">error</span>
-                <p className="font-body-md text-body-md text-red-800">{error}</p>
+              <div className="mb-lg p-md bg-rose-500/15 border border-rose-500/30 rounded-xl flex gap-md items-start text-rose-300">
+                <span className="material-symbols-outlined text-rose-400 !text-[20px]">error</span>
+                <p className="font-body-md text-body-md">{error}</p>
               </div>
             )}
-
-
 
             {/* Login Form */}
             <form className="space-y-lg" onSubmit={handleSubmit}>
               
               {/* Email Field */}
               <div className="relative">
-                <label className="block font-label-md text-label-md text-slate-700 mb-xs ml-1" htmlFor="email">Email Address</label>
+                <label className="block font-label-md text-label-md text-slate-300 mb-xs ml-1" htmlFor="email">Email Address</label>
                 <div className="relative flex items-center">
                   <span className="material-symbols-outlined absolute left-4 text-slate-400 !text-[20px]">mail</span>
                   <input 
-                    className="w-full h-12 pl-12 pr-4 bg-white/50 border border-slate-300 rounded-xl font-body-md text-slate-900 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none" 
+                    className="w-full h-12 pl-12 pr-4 bg-slate-950/70 border border-slate-700/80 rounded-xl font-body-md text-white placeholder-slate-500 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none" 
                     id="email" 
                     placeholder="student@university.edu" 
                     type="email"
@@ -162,13 +165,13 @@ const StudentLogin = () => {
               {/* Password Field */}
               <div className="relative">
                 <div className="flex justify-between items-center mb-xs">
-                  <label className="font-label-md text-label-md text-slate-700 ml-1" htmlFor="password">Password</label>
-                  <Link className="font-label-md text-label-md text-primary hover:underline" to="/forgot-password">Forgot Password?</Link>
+                  <label className="font-label-md text-label-md text-slate-300 ml-1" htmlFor="password">Password</label>
+                  <Link className="font-label-md text-label-md text-blue-400 hover:text-blue-300 hover:underline" to="/forgot-password">Forgot Password?</Link>
                 </div>
                 <div className="relative flex items-center">
                   <span className="material-symbols-outlined absolute left-4 text-slate-400 !text-[20px]">lock</span>
                   <input 
-                    className="w-full h-12 pl-12 pr-12 bg-white/50 border border-slate-300 rounded-xl font-body-md text-slate-900 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none" 
+                    className="w-full h-12 pl-12 pr-12 bg-slate-950/70 border border-slate-700/80 rounded-xl font-body-md text-white placeholder-slate-500 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none" 
                     id="password" 
                     placeholder="••••••••" 
                     type={showPassword ? "text" : "password"}
@@ -180,7 +183,7 @@ const StudentLogin = () => {
                   <button 
                     type="button" 
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none flex items-center"
+                    className="absolute right-4 text-slate-400 hover:text-slate-200 transition-colors focus:outline-none flex items-center cursor-pointer"
                   >
                     <span className="material-symbols-outlined !text-[20px]">
                       {showPassword ? 'visibility' : 'visibility_off'}
@@ -191,20 +194,20 @@ const StudentLogin = () => {
 
               {/* Primary Login Button */}
               <button 
-                className="w-full h-14 primary-gradient text-white font-title-lg text-title-lg rounded-xl shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-sm disabled:opacity-60" 
+                className="w-full h-14 bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 text-white font-title-lg text-title-lg rounded-xl shadow-lg shadow-blue-500/25 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-sm disabled:opacity-60 cursor-pointer border border-blue-400/30" 
                 type="submit"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Signing In…' : 'Access Exam Shell'}
+                {isSubmitting ? 'Signing In…' : 'Access Exam Portal'}
                 <span className="material-symbols-outlined">arrow_forward</span>
               </button>
             </form>
 
             {/* Registration Anchor */}
             <div className="mt-xl text-center">
-              <p className="font-body-md text-body-md text-slate-600">
-                First time using AI-Invigilator?{' '}
-                <Link className="text-primary font-semibold hover:underline" to="/register">Register Account</Link>
+              <p className="font-body-md text-body-md text-slate-400">
+                First time candidate?{' '}
+                <Link className="text-blue-400 font-semibold hover:text-blue-300 hover:underline" to="/register">Register Baseline Account</Link>
               </p>
             </div>
           </div>

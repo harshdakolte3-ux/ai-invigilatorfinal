@@ -33,7 +33,7 @@ const AdminSidebar = ({ protectedMode = true }) => {
 
   const handleLogout = () => {
     adminLogout();
-    window.location.href = '/';
+    window.location.href = '/admin-login';
   };
 
   const linkClasses = ({ isActive }) =>
@@ -49,9 +49,9 @@ const AdminSidebar = ({ protectedMode = true }) => {
     <aside className="fixed left-0 top-0 h-full w-[280px] z-40 bg-slate-900/80 backdrop-blur-xl border-r border-slate-700 shadow-md flex flex-col py-lg px-md gap-sm">
       <button
         type="button"
-        onClick={() => navigate('/')}
-        title="Back to Home"
-        className="mb-xs px-sm flex items-center gap-md cursor-pointer hover:opacity-80 active:scale-[0.98] transition-all text-left"
+        onClick={() => navigate('/admin-dashboard')}
+        title="AI-Invigilator Proctor Console"
+        className="mb-md px-sm flex items-center gap-md cursor-pointer hover:opacity-80 active:scale-[0.98] transition-all text-left"
       >
         <div className="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center text-on-primary-container">
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>security</span>
@@ -62,15 +62,6 @@ const AdminSidebar = ({ protectedMode = true }) => {
         </div>
       </button>
 
-      <button
-        type="button"
-        onClick={() => navigate('/')}
-        className="mb-lg mx-sm flex items-center gap-xs px-md py-sm rounded-lg font-label-md text-label-md text-slate-300 hover:bg-slate-800/50 hover:text-primary transition-all cursor-pointer"
-      >
-        <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-        Back to Home
-      </button>
-
       <nav className="flex-1 flex flex-col gap-xs">
         {NAV_ITEMS.map((item) => (
           <NavLink key={item.to} to={item.to} className={linkClasses}>
@@ -78,11 +69,19 @@ const AdminSidebar = ({ protectedMode = true }) => {
             <span className="font-label-md text-label-md">{item.label}</span>
           </NavLink>
         ))}
-        <div className="mt-auto border-t border-slate-700 pt-sm">
+        <div className="mt-auto border-t border-slate-700 pt-sm flex flex-col gap-xs">
           <NavLink to="/admin/settings" className={linkClasses}>
             <span className="material-symbols-outlined">settings</span>
             <span className="font-label-md text-label-md">Settings</span>
           </NavLink>
+          <button
+            type="button"
+            onClick={() => setShowLogoutModal(true)}
+            className="flex items-center gap-md px-md py-sm rounded-lg font-label-md text-label-md text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-all cursor-pointer w-full text-left duration-200"
+          >
+            <span className="material-symbols-outlined text-[20px]">logout</span>
+            <span className="font-label-md text-label-md font-semibold">Log Out</span>
+          </button>
         </div>
       </nav>
 

@@ -144,9 +144,6 @@ const AdminOverview = ({ protectedMode = false }) => {
           </div>
           <div className="flex gap-md items-center">
             <ThemeToggle />
-            <button onClick={() => navigate('/')} className="px-lg py-sm rounded-xl glass-card flex items-center gap-sm text-slate-300 font-label-md text-label-md cursor-pointer active:scale-95 transition-all">
-              <span className="material-symbols-outlined">arrow_back</span> Back to Home
-            </button>
             <button onClick={handleExport} className="px-lg py-sm rounded-xl glass-card flex items-center gap-sm text-primary font-label-md text-label-md cursor-pointer active:scale-95 transition-all" onMouseMove={handleMouseMove}>
               <span className="material-symbols-outlined">download</span> Export Report
             </button>

@@ -33,8 +33,16 @@ const StudentDashboard = () => {
   const matchedConsecutiveRef = useRef(0);
 
   const navigate = useNavigate();
-  const { student } = useAuth();
+  const { student, studentLogout } = useAuth();
   const currentStudent = student || JSON.parse(localStorage.getItem('student') || '{}');
+
+  const handleLogout = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+    }
+    studentLogout();
+    navigate('/student-login');
+  };
 
   useEffect(() => {
     let active = true;
@@ -356,20 +364,25 @@ const StudentDashboard = () => {
 
   return (
     <div className="bg-surface text-on-surface font-body-md min-h-screen flex flex-col overflow-x-hidden relative">
-      {/* Inline styles for custom CSS classes originally in <head> */}
+      {/* Inline styles for custom CSS classes */}
       <style dangerouslySetInnerHTML={{ __html: `
         .glass-card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(226, 232, 240, 0.8);
+            background: rgba(11, 17, 32, 0.78);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(59, 130, 246, 0.22);
+            box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .dark .glass-card {
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid rgba(71, 85, 105, 0.5);
+        .glass-card:hover {
+            border-color: rgba(96, 165, 250, 0.4);
+            box-shadow: 0 16px 45px -8px rgba(0, 0, 0, 0.7), 0 0 25px rgba(59, 130, 246, 0.15);
         }
         .status-pill {
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(4px);
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(59, 130, 246, 0.25);
         }
         .animate-pulse-slow {
             animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -379,7 +392,7 @@ const StudentDashboard = () => {
             50% { opacity: .5; }
         }
         .shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
             background-size: 200% 100%;
             animation: shimmer 2s infinite;
         }
@@ -413,56 +426,56 @@ const StudentDashboard = () => {
       />
 
       {/* Top Navigation Header */}
-      <header className="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-container-highest/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm">
+      <header className="fixed top-0 w-full z-50 bg-slate-950/75 backdrop-blur-xl border-b border-blue-500/20 shadow-md">
         <div className="flex justify-between items-center h-14 px-gutter max-w-container-max mx-auto">
           <div className="flex items-center gap-md">
             <button
               type="button"
-              onClick={() => navigate('/')}
-              title="Back to Home"
-              className="flex items-center gap-xs px-sm py-xs rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-colors cursor-pointer active:scale-95"
+              onClick={handleLogout}
+              title="Log Out"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-label-md text-label-md text-rose-300 bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 hover:text-rose-200 transition-all cursor-pointer active:scale-95 shadow-sm"
             >
-              <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-              Back to Home
+              <span className="material-symbols-outlined text-[18px]">logout</span>
+              Log Out
             </button>
-            <span className="font-headline-md text-headline-md text-primary">Exam Session</span>
+            <span className="font-headline-md text-headline-md font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-sky-400">Exam Session</span>
             <div className="hidden md:flex gap-sm ml-lg">
-              <div className="flex items-center gap-xs px-sm py-xs rounded-full status-pill border border-outline-variant/20">
-                <span className="material-symbols-outlined text-primary text-[18px]">videocam</span>
-                <span className="font-label-md text-label-md text-slate-800 dark:text-slate-200">Webcam Active</span>
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse-slow"></div>
+              <div className="flex items-center gap-xs px-sm py-xs rounded-full status-pill shadow-sm">
+                <span className="material-symbols-outlined text-blue-400 text-[18px]">videocam</span>
+                <span className="font-label-md text-label-md text-slate-200">Webcam Active</span>
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-slow"></div>
               </div>
-              <div className="flex items-center gap-xs px-sm py-xs rounded-full status-pill border border-outline-variant/20">
+              <div className="flex items-center gap-xs px-sm py-xs rounded-full status-pill shadow-sm">
                 <div className="flex items-center gap-2">
                     {isOnline ? (
                         <>
-                            <span className="material-symbols-outlined text-green-500 text-[18px]">wifi</span>
-                            <span className="text-sm text-green-600 font-bold">Connected</span>
+                            <span className="material-symbols-outlined text-emerald-400 text-[18px]">wifi</span>
+                            <span className="text-sm text-emerald-400 font-bold">Connected</span>
                         </>
                     ) : (
                         <>
-                            <span className="material-symbols-outlined text-red-500 text-[18px]">wifi_off</span>
-                            <span className="text-sm text-red-600 font-bold">Disconnected</span>
+                            <span className="material-symbols-outlined text-rose-500 text-[18px]">wifi_off</span>
+                            <span className="text-sm text-rose-500 font-bold">Disconnected</span>
                         </>
                     )}
                 </div>
               </div>
-              <div className="flex items-center gap-xs px-sm py-xs rounded-full status-pill border border-outline-variant/20">
-                <span className="material-symbols-outlined text-primary text-[18px]">psychology</span>
-                <span className="font-label-md text-label-md text-slate-800 dark:text-slate-200">AI Monitoring On</span>
+              <div className="flex items-center gap-xs px-sm py-xs rounded-full status-pill shadow-sm">
+                <span className="material-symbols-outlined text-blue-400 text-[18px]">psychology</span>
+                <span className="font-label-md text-label-md text-slate-200">AI Monitoring On</span>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-md">
             <ThemeToggle />
             <div className="text-right hidden sm:block">
-              <p className="font-label-md text-label-md text-on-surface">{student?.full_name || "Student"}</p>
-              <p className="font-mono-sm text-mono-sm text-on-surface-variant">ID: {student?.student_id}</p>
+              <p className="font-label-md text-label-md text-slate-100 font-semibold">{student?.full_name || "Student"}</p>
+              <p className="font-mono-sm text-mono-sm text-slate-400 font-mono">ID: {student?.student_id}</p>
             </div>
             
             <div className="relative">
               <div 
-                className="w-10 h-10 rounded-full border-2 border-primary/20 overflow-hidden bg-surface-container-highest cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                className="w-10 h-10 rounded-full border-2 border-blue-500/40 overflow-hidden bg-slate-900 cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all shadow-md"
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
               >
                 <img 
@@ -474,28 +487,38 @@ const StudentDashboard = () => {
               
               {/* Profile Dropdown */}
               {showProfileMenu && (
-                <div className="absolute top-12 left-0 w-80 glass-card rounded-xl shadow-lg border border-outline-variant/30 p-md z-50 animate-in fade-in slide-in-from-top-4 duration-200">
-                <div className="flex flex-col gap-xs mb-md border-b border-outline-variant/20 pb-md">
-                  <h3 className="font-title-md text-title-md text-slate-900">{student?.full_name || "Student"}</h3>
-                  <p className="font-body-sm text-body-sm text-slate-600">{student?.email || "student@university.edu"}</p>
+                <div className="absolute top-12 left-0 w-80 bg-slate-900/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-blue-500/30 p-md z-50 animate-in fade-in slide-in-from-top-4 duration-200 text-slate-200">
+                <div className="flex flex-col gap-xs mb-md border-b border-slate-800 pb-md">
+                  <h3 className="font-title-md text-title-md text-white font-bold">{student?.full_name || "Student"}</h3>
+                  <p className="font-body-sm text-body-sm text-slate-400">{student?.email || "student@university.edu"}</p>
                 </div>
                 <div className="flex flex-col gap-sm">
                   <div className="flex justify-between items-center">
-                    <span className="font-label-sm text-label-sm text-slate-500 uppercase">Student ID</span>
-                    <span className="font-mono-sm text-mono-sm text-slate-800 font-bold">{student?.student_id || "N/A"}</span>
+                    <span className="font-label-sm text-label-sm text-slate-400 uppercase">Student ID</span>
+                    <span className="font-mono-sm text-mono-sm text-white font-bold">{student?.student_id || "N/A"}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-label-sm text-label-sm text-slate-500 uppercase">Enrollment No</span>
-                    <span className="font-mono-sm text-mono-sm text-slate-800 font-bold">{student?.enrollment_no || "2026001"}</span>
+                    <span className="font-label-sm text-label-sm text-slate-400 uppercase">Enrollment No</span>
+                    <span className="font-mono-sm text-mono-sm text-white font-bold">{student?.enrollment_no || "2026001"}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-label-sm text-label-sm text-slate-500 uppercase">Course</span>
-                    <span className="font-body-sm text-body-sm text-slate-800 font-bold">{student?.course || "B.Tech"}</span>
+                    <span className="font-label-sm text-label-sm text-slate-400 uppercase">Course</span>
+                    <span className="font-body-sm text-body-sm text-white font-bold">{student?.course || "B.Tech"}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-label-sm text-label-sm text-slate-500 uppercase">Semester</span>
-                    <span className="font-body-sm text-body-sm text-slate-800 font-bold">{student?.semester || "8"}</span>
+                    <span className="font-label-sm text-label-sm text-slate-400 uppercase">Semester</span>
+                    <span className="font-body-sm text-body-sm text-white font-bold">{student?.semester || "8"}</span>
                   </div>
+                </div>
+                <div className="pt-sm mt-md border-t border-slate-800">
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full py-2 px-3 rounded-xl text-rose-300 hover:text-rose-200 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 flex items-center justify-center gap-2 font-medium text-sm transition-all cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">logout</span>
+                    Log Out
+                  </button>
                 </div>
               </div>
             )}
@@ -509,23 +532,23 @@ const StudentDashboard = () => {
         {/* Left Column: Pre-exam Checks & Instructions */}
         <div className="lg:col-span-7 space-y-lg">
           {/* Instructions Panel */}
-          <section className="glass-card rounded-xl p-lg shadow-sm">
-            <h2 className="font-headline-md text-headline-md text-primary mb-md flex items-center gap-sm">
-              <span className="material-symbols-outlined">description</span>
+          <section className="glass-card rounded-2xl p-lg shadow-xl">
+            <h2 className="font-headline-md text-headline-md text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300 mb-md flex items-center gap-sm font-bold">
+              <span className="material-symbols-outlined text-blue-400">description</span>
               Exam Instructions
             </h2>
-            <div className="space-y-sm text-slate-700 font-body-lg">
-              <p className="font-bold text-slate-900">Please read carefully before starting the session:</p>
-              <ul className="list-disc list-inside space-y-xs ml-base text-slate-700">
+            <div className="space-y-sm text-slate-300 font-body-lg">
+              <p className="font-bold text-slate-100">Please read carefully before starting the session:</p>
+              <ul className="list-disc list-inside space-y-xs ml-base text-slate-300">
                 <li>Maintain a clear view of your face in the camera at all times.</li>
                 <li>Do not leave the browser window or use external applications.</li>
                 <li>Ensure your room is well-lit and noise-free.</li>
                 <li>The AI system will flag suspicious head movements or external voices.</li>
                 <li>You have 10 minutes to complete the pre-checks after logging in.</li>
               </ul>
-              <div className="mt-lg p-md rounded-lg bg-primary/10 border border-primary/20">
-                <p className="font-label-md text-label-md text-primary uppercase mb-xs tracking-wider font-bold">Integrity Statement</p>
-                <p className="text-slate-800 text-body-md italic font-medium">"I hereby confirm that I will complete this examination independently and without unauthorized assistance."</p>
+              <div className="mt-lg p-md rounded-xl bg-blue-950/40 border border-blue-500/30 backdrop-blur-sm">
+                <p className="font-label-md text-label-md text-blue-400 uppercase mb-xs tracking-wider font-bold">Integrity Statement</p>
+                <p className="text-blue-100 text-body-md italic font-medium">"I hereby confirm that I will complete this examination independently and without unauthorized assistance."</p>
               </div>
             </div>
           </section>
@@ -533,25 +556,25 @@ const StudentDashboard = () => {
           {/* Pre-exam Hardware Checks (Bento Style) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
             {/* Camera Test */}
-            <div className="glass-card rounded-xl p-md flex flex-col gap-sm overflow-hidden group">
+            <div className="glass-card rounded-2xl p-md flex flex-col gap-sm overflow-hidden group shadow-lg">
               <div className="flex justify-between items-start">
                 <button 
                   type="button"
                   onClick={() => setIsCameraOn(!isCameraOn)}
-                  className={`material-symbols-outlined p-xs rounded-lg transition-colors focus:outline-none cursor-pointer ${isCameraOn ? 'text-primary bg-primary/10 hover:bg-primary/20' : 'text-red-600 bg-red-100 hover:bg-red-200'}`}
+                  className={`material-symbols-outlined p-xs rounded-xl transition-all focus:outline-none cursor-pointer ${isCameraOn ? 'text-blue-400 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30' : 'text-rose-400 bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30'}`}
                 >
                   {isCameraOn ? 'videocam' : 'videocam_off'}
                 </button>
-                <span className={`font-label-md text-label-md px-xs py-[2px] rounded uppercase font-bold transition-colors ${cameraVerified ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'}`}>
+                <span className={`font-label-md text-label-md px-2.5 py-1 rounded-full uppercase font-bold tracking-wide transition-colors border ${cameraVerified ? 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30' : 'text-rose-400 bg-rose-500/15 border-rose-500/30'}`}>
                   {camStatusText}
                 </span>
               </div>
               <div>
-                <h3 className="font-title-lg text-title-lg text-slate-900">Camera Check</h3>
-                <p className="font-body-md text-body-md text-slate-600">Face detection active. High resolution feed.</p>
+                <h3 className="font-title-lg text-title-lg text-white font-bold">Camera Check</h3>
+                <p className="font-body-md text-body-md text-slate-400">Face detection active. High resolution feed.</p>
               </div>
               <div 
-                className="aspect-video bg-black rounded-lg relative overflow-hidden mt-base group-hover:ring-2 ring-primary/50 transition-all cursor-pointer"
+                className="aspect-video bg-black/60 rounded-xl relative overflow-hidden mt-base group-hover:ring-2 ring-blue-500/50 transition-all cursor-pointer border border-slate-800"
                 onClick={() => setIsFaceInFrame(!isFaceInFrame)}
                 title="Click to simulate face entering/leaving the frame"
               >
@@ -560,45 +583,45 @@ const StudentDashboard = () => {
                   autoPlay 
                   playsInline 
                   muted
-                  className={`w-full h-full object-cover transition-opacity ${hasStream ? 'opacity-80' : 'opacity-0'}`} 
+                  className={`w-full h-full object-cover transition-opacity ${hasStream ? 'opacity-90' : 'opacity-0'}`} 
                 />
-                <div className={`absolute inset-0 flex items-center justify-center transition-colors pointer-events-none ${isFaceInFrame ? 'border-primary/60' : 'border-red-500/60'}`}>
-                  <div className={`w-24 h-24 border-2 rounded-full animate-pulse transition-colors ${isFaceInFrame ? 'border-primary/60' : 'border-red-500/80 bg-red-500/20'}`}></div>
+                <div className={`absolute inset-0 flex items-center justify-center transition-colors pointer-events-none ${isFaceInFrame ? 'border-blue-400/60' : 'border-rose-500/60'}`}>
+                  <div className={`w-24 h-24 border-2 rounded-full animate-pulse transition-colors ${isFaceInFrame ? 'border-blue-400/70 shadow-[0_0_15px_rgba(59,130,246,0.3)]' : 'border-rose-500/80 bg-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.4)]'}`}></div>
                 </div>
                 {!isFaceInFrame && hasStream && (
-                   <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded font-bold pointer-events-none">Face Out of Frame</div>
+                   <div className="absolute top-2 left-2 bg-rose-600/90 backdrop-blur-md text-white text-xs px-2.5 py-1 rounded-md font-bold pointer-events-none border border-rose-400/40">Face Out of Frame</div>
                 )}
               </div>
             </div>
 
             {/* Microphone Test */}
-            <div className="glass-card rounded-xl p-md flex flex-col justify-between overflow-hidden">
+            <div className="glass-card rounded-2xl p-md flex flex-col justify-between overflow-hidden shadow-lg">
               <div className="flex justify-between items-start">
                 <button 
                   type="button"
                   onClick={() => setIsMicOn(!isMicOn)}
-                  className={`material-symbols-outlined p-xs rounded-lg transition-colors focus:outline-none cursor-pointer ${isMicOn ? 'text-primary bg-primary/10 hover:bg-primary/20' : 'text-red-600 bg-red-100 hover:bg-red-200'}`}
+                  className={`material-symbols-outlined p-xs rounded-xl transition-all focus:outline-none cursor-pointer ${isMicOn ? 'text-blue-400 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30' : 'text-rose-400 bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30'}`}
                 >
                   {isMicOn ? 'mic' : 'mic_off'}
                 </button>
-                <span className={`font-label-md text-label-md px-xs py-[2px] rounded uppercase font-bold transition-colors ${isMicOn ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'}`}>
+                <span className={`font-label-md text-label-md px-2.5 py-1 rounded-full uppercase font-bold tracking-wide transition-colors border ${isMicOn ? 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30' : 'text-rose-400 bg-rose-500/15 border-rose-500/30'}`}>
                   {isMicOn ? 'VERIFIED' : 'NOT VERIFIED'}
                 </span>
               </div>
               <div className="py-md">
-                <h3 className="font-title-lg text-title-lg text-slate-900">Microphone Check</h3>
-                <p className="font-body-md text-body-md text-slate-600">Audio levels normal. Noise cancellation enabled.</p>
+                <h3 className="font-title-lg text-title-lg text-white font-bold">Microphone Check</h3>
+                <p className="font-body-md text-body-md text-slate-400">Audio levels normal. Noise cancellation enabled.</p>
               </div>
-              <div className="h-16 flex items-end gap-[2px] px-sm bg-slate-100 rounded-lg">
-                <div className="flex-1 bg-primary/40 rounded-t-sm" style={{ height: "30%" }}></div>
-                <div className="flex-1 bg-primary/60 rounded-t-sm" style={{ height: "45%" }}></div>
-                <div className="flex-1 bg-primary/80 rounded-t-sm" style={{ height: "70%" }}></div>
-                <div className="flex-1 bg-primary/40 rounded-t-sm" style={{ height: "20%" }}></div>
-                <div className="flex-1 bg-primary/60 rounded-t-sm" style={{ height: "55%" }}></div>
-                <div className="flex-1 bg-primary/80 rounded-t-sm" style={{ height: "90%" }}></div>
-                <div className="flex-1 bg-primary/40 rounded-t-sm" style={{ height: "40%" }}></div>
-                <div className="flex-1 bg-primary/60 rounded-t-sm" style={{ height: "25%" }}></div>
-                <div className="flex-1 bg-primary/80 rounded-t-sm" style={{ height: "60%" }}></div>
+              <div className="h-16 flex items-end gap-[3px] px-sm bg-slate-950/70 border border-slate-800/80 rounded-xl shadow-inner">
+                <div className="flex-1 bg-gradient-to-t from-blue-600 to-cyan-400 rounded-t-sm shadow-[0_0_8px_rgba(56,189,248,0.3)]" style={{ height: "30%" }}></div>
+                <div className="flex-1 bg-gradient-to-t from-blue-600 to-cyan-400 rounded-t-sm shadow-[0_0_8px_rgba(56,189,248,0.3)]" style={{ height: "45%" }}></div>
+                <div className="flex-1 bg-gradient-to-t from-blue-600 to-cyan-400 rounded-t-sm shadow-[0_0_8px_rgba(56,189,248,0.3)]" style={{ height: "70%" }}></div>
+                <div className="flex-1 bg-gradient-to-t from-blue-600 to-cyan-400 rounded-t-sm shadow-[0_0_8px_rgba(56,189,248,0.3)]" style={{ height: "20%" }}></div>
+                <div className="flex-1 bg-gradient-to-t from-blue-600 to-cyan-400 rounded-t-sm shadow-[0_0_8px_rgba(56,189,248,0.3)]" style={{ height: "55%" }}></div>
+                <div className="flex-1 bg-gradient-to-t from-blue-600 to-cyan-400 rounded-t-sm shadow-[0_0_8px_rgba(56,189,248,0.3)]" style={{ height: "90%" }}></div>
+                <div className="flex-1 bg-gradient-to-t from-blue-600 to-cyan-400 rounded-t-sm shadow-[0_0_8px_rgba(56,189,248,0.3)]" style={{ height: "40%" }}></div>
+                <div className="flex-1 bg-gradient-to-t from-blue-600 to-cyan-400 rounded-t-sm shadow-[0_0_8px_rgba(56,189,248,0.3)]" style={{ height: "25%" }}></div>
+                <div className="flex-1 bg-gradient-to-t from-blue-600 to-cyan-400 rounded-t-sm shadow-[0_0_8px_rgba(56,189,248,0.3)]" style={{ height: "60%" }}></div>
               </div>
             </div>
           </div>
@@ -607,48 +630,48 @@ const StudentDashboard = () => {
         {/* Right Column: Exam Detail & Start Button */}
         <div className="lg:col-span-5 space-y-lg">
           {/* Upcoming Exam Card */}
-          <section className="glass-card rounded-xl p-lg shadow-md relative overflow-hidden border-primary/20">
-            <div className="absolute top-0 right-0 p-md">
-              <span className="material-symbols-outlined text-primary opacity-20 text-[80px] rotate-12">school</span>
+          <section className="glass-card rounded-2xl p-lg shadow-xl relative overflow-hidden border border-blue-500/20">
+            <div className="absolute top-0 right-0 p-md pointer-events-none">
+              <span className="material-symbols-outlined text-blue-400/10 text-[96px] rotate-12">school</span>
             </div>
             <div className="relative z-10">
-              <span className="font-label-md text-label-md text-primary-container bg-primary px-sm py-xs rounded-full uppercase tracking-tighter">Live Session</span>
-              <h1 className="font-headline-lg text-headline-lg text-slate-900 mt-sm">
+              <span className="font-label-md text-label-md text-blue-300 bg-blue-500/20 border border-blue-400/30 px-3 py-1 rounded-full uppercase tracking-wider text-xs font-bold inline-block">Live Session</span>
+              <h1 className="font-headline-lg text-headline-lg text-white font-bold tracking-tight mt-sm">
                 {examDetails.examName}
               </h1>     
-              <p className="font-body-lg text-body-lg text-slate-600 mt-xs font-medium">
+              <p className="font-body-lg text-body-lg text-slate-300 mt-xs font-medium">
                 {examDetails.examCode} | {examDetails.examType}
               </p>
               <div className="mt-xl space-y-md">
                 <div className="flex items-center gap-md">
-                  <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-primary">calendar_today</span>
+                  <div className="w-12 h-12 rounded-xl bg-slate-800/80 border border-slate-700/70 flex items-center justify-center text-blue-400 shadow-inner">
+                    <span className="material-symbols-outlined">calendar_today</span>
                   </div>
                   <div>
-                    <p className="font-label-md text-label-md text-slate-500 uppercase font-bold">Exam Date</p>
-                    <p className="font-title-lg text-title-lg text-slate-900">
+                    <p className="font-label-md text-label-md text-slate-400 uppercase font-semibold tracking-wider">Exam Date</p>
+                    <p className="font-title-lg text-title-lg text-white font-bold">
                       {examDetails.examDate}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-md">
-                  <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-primary">schedule</span>
+                  <div className="w-12 h-12 rounded-xl bg-slate-800/80 border border-slate-700/70 flex items-center justify-center text-blue-400 shadow-inner">
+                    <span className="material-symbols-outlined">schedule</span>
                   </div>
                   <div>
-                    <p className="font-label-md text-label-md text-slate-500 uppercase font-bold">Duration</p>
-                    <p className="font-title-lg text-title-lg text-slate-900">
+                    <p className="font-label-md text-label-md text-slate-400 uppercase font-semibold tracking-wider">Duration</p>
+                    <p className="font-title-lg text-title-lg text-white font-bold">
                       {examDetails.duration}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-md">
-                  <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-primary">analytics</span>
+                  <div className="w-12 h-12 rounded-xl bg-slate-800/80 border border-slate-700/70 flex items-center justify-center text-blue-400 shadow-inner">
+                    <span className="material-symbols-outlined">analytics</span>
                   </div>
                   <div>
-                    <p className="font-label-md text-label-md text-slate-500 uppercase font-bold">Total Marks</p>
-                    <p className="font-title-lg text-title-lg text-slate-900">
+                    <p className="font-label-md text-label-md text-slate-400 uppercase font-semibold tracking-wider">Total Marks</p>
+                    <p className="font-title-lg text-title-lg text-white font-bold">
                       {examDetails.totalMarks}
                     </p>
                   </div>
@@ -658,29 +681,29 @@ const StudentDashboard = () => {
           </section>
 
           {/* AI Status & System Health */}
-          <section className="glass-card rounded-xl p-lg">
-            <h3 className="font-title-lg text-title-lg mb-md text-slate-900">System Readiness</h3>
+          <section className="glass-card rounded-2xl p-lg shadow-xl">
+            <h3 className="font-title-lg text-title-lg mb-md text-white font-bold">System Readiness</h3>
             <div className="space-y-sm">
-              <div className="flex justify-between items-center p-sm rounded-lg hover:bg-slate-100/50 transition-colors">
+              <div className="flex justify-between items-center p-sm rounded-xl bg-slate-950/40 hover:bg-slate-800/50 border border-slate-800/60 transition-colors">
                 <div className="flex items-center gap-sm">
-                  <span className="material-symbols-outlined text-green-600">lock</span>
-                  <span className="font-body-md text-body-md text-slate-700 font-medium">Environment Lock</span>
+                  <span className="material-symbols-outlined text-emerald-400">lock</span>
+                  <span className="font-body-md text-body-md text-slate-200 font-medium">Environment Lock</span>
                 </div>
-                <span className="font-mono-sm text-mono-sm text-green-700 font-bold uppercase">Ready</span>
+                <span className="font-mono-sm text-mono-sm text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded font-bold uppercase">Ready</span>
               </div>
-              <div className="flex justify-between items-center p-sm rounded-lg hover:bg-slate-100/50 transition-colors">
+              <div className="flex justify-between items-center p-sm rounded-xl bg-slate-950/40 hover:bg-slate-800/50 border border-slate-800/60 transition-colors">
                 <div className="flex items-center gap-sm">
-                  <span className="material-symbols-outlined text-green-600">security</span>
-                  <span className="font-body-md text-body-md text-slate-700 font-medium">Proctor AI V4.2</span>
+                  <span className="material-symbols-outlined text-emerald-400">security</span>
+                  <span className="font-body-md text-body-md text-slate-200 font-medium">Proctor AI V4.2</span>
                 </div>
-                <span className="font-mono-sm text-mono-sm text-green-700 font-bold uppercase">Active</span>
+                <span className="font-mono-sm text-mono-sm text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded font-bold uppercase">Active</span>
               </div>
-              <div className="flex justify-between items-center p-sm rounded-lg hover:bg-slate-100/50 transition-colors">
+              <div className="flex justify-between items-center p-sm rounded-xl bg-slate-950/40 hover:bg-slate-800/50 border border-slate-800/60 transition-colors">
                 <div className="flex items-center gap-sm">
-                  <span className="material-symbols-outlined text-green-600">router</span>
-                  <span className="font-body-md text-body-md text-slate-700 font-medium">Connection Latency</span>
+                  <span className="material-symbols-outlined text-emerald-400">router</span>
+                  <span className="font-body-md text-body-md text-slate-200 font-medium">Connection Latency</span>
                 </div>
-                <span className="font-mono-sm text-mono-sm text-green-700 font-bold uppercase">14ms</span>
+                <span className="font-mono-sm text-mono-sm text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded font-bold uppercase">14ms</span>
               </div>
             </div>
           </section>
@@ -688,7 +711,7 @@ const StudentDashboard = () => {
           {/* Start Button */}
           <div className="pt-md relative z-10">
             <button 
-              className="w-full py-lg rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-headline-md text-headline-md shadow-lg shadow-green-500/20 flex items-center justify-center gap-md hover:brightness-110 active:scale-95 transition-all group overflow-hidden relative cursor-pointer" 
+              className="w-full py-lg rounded-2xl bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 text-white font-headline-md text-headline-md shadow-xl shadow-emerald-500/25 border border-emerald-400/30 flex items-center justify-center gap-md hover:brightness-110 active:scale-95 transition-all group overflow-hidden relative cursor-pointer" 
               onClick={handleOpenVerification}
             >
               <span className="relative z-10 flex items-center gap-sm">
@@ -698,7 +721,7 @@ const StudentDashboard = () => {
               <span className="material-symbols-outlined relative z-10 group-hover:translate-x-1 transition-transform">arrow_forward</span>
               <div className="absolute inset-0 shimmer opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>
-            <p className="text-center font-label-md text-label-md text-slate-300 mt-sm bg-black/30 backdrop-blur rounded-full px-4 py-1 mx-auto max-w-max">
+            <p className="text-center font-label-md text-label-md text-slate-400 mt-sm bg-slate-950/70 border border-slate-800 backdrop-blur rounded-full px-4 py-1.5 mx-auto max-w-max">
               AI Face Verification required prior to question access.
             </p>
           </div>
@@ -708,24 +731,24 @@ const StudentDashboard = () => {
       {/* Pre-Exam Identity Verification Modal (Anti-Impersonation) */}
       {showVerifyModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-          <div className="glass-card w-full max-w-4xl rounded-3xl p-lg md:p-xl shadow-2xl border border-primary/30 relative text-slate-900 dark:text-white my-auto">
+          <div className="glass-card w-full max-w-4xl rounded-3xl p-lg md:p-xl shadow-2xl border border-blue-500/30 relative text-white my-auto bg-slate-900/95 backdrop-blur-2xl">
             
             {/* Modal Header */}
-            <div className="flex justify-between items-start mb-lg border-b border-slate-200 dark:border-slate-700 pb-md">
+            <div className="flex justify-between items-start mb-lg border-b border-slate-800 pb-md">
               <div className="flex items-center gap-md">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-white shadow-lg">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
                   <span className="material-symbols-outlined !text-[28px]">face_unlock</span>
                 </div>
                 <div>
                   <div className="flex items-center gap-xs">
-                    <span className="text-xs uppercase tracking-wider font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                    <span className="text-xs uppercase tracking-wider font-bold text-blue-400 bg-blue-500/15 border border-blue-500/30 px-2.5 py-0.5 rounded-full">
                       Step 1: Anti-Impersonation Gate
                     </span>
                   </div>
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+                  <h2 className="text-2xl font-bold text-white mt-1">
                     Pre-Exam Identity Verification
                   </h2>
-                  <p className="text-sm text-slate-600 dark:text-slate-300">
+                  <p className="text-sm text-slate-300">
                     AI biometric verification matching live camera feed against registered baseline photo.
                   </p>
                 </div>
@@ -734,7 +757,7 @@ const StudentDashboard = () => {
               <button
                 type="button"
                 onClick={() => setShowVerifyModal(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined !text-[28px]">close</span>
               </button>
@@ -744,20 +767,20 @@ const StudentDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-lg items-stretch">
               
               {/* Left Column: Registered Student Baseline */}
-              <div className="bg-slate-100/80 dark:bg-slate-800/80 rounded-2xl p-md flex flex-col justify-between border border-slate-200 dark:border-slate-700">
+              <div className="bg-slate-950/75 rounded-2xl p-md flex flex-col justify-between border border-slate-800">
                 <div>
                   <div className="flex justify-between items-center mb-sm">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                       Registered Baseline Profile
                     </span>
-                    <span className="text-[11px] font-bold text-green-700 bg-green-100 dark:bg-green-950/60 dark:text-green-400 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
                       <span className="material-symbols-outlined !text-[14px]">verified</span>
                       On Record
                     </span>
                   </div>
 
                   {/* Profile Photo Display */}
-                  <div className="aspect-[4/3] w-full max-w-[280px] mx-auto rounded-xl overflow-hidden bg-black/20 border-2 border-primary/40 relative shadow-md">
+                  <div className="aspect-[4/3] w-full max-w-[280px] mx-auto rounded-xl overflow-hidden bg-black/40 border-2 border-blue-500/40 relative shadow-md">
                     {currentStudent?.profile_photo ? (
                       <img
                         src={currentStudent.profile_photo}
@@ -770,35 +793,35 @@ const StudentDashboard = () => {
                         <p className="text-xs">No registered baseline photo found.</p>
                       </div>
                     )}
-                    <div className="absolute bottom-2 left-2 right-2 bg-black/60 backdrop-blur-md rounded-lg py-1 px-2 text-center text-white text-[11px] font-mono">
+                    <div className="absolute bottom-2 left-2 right-2 bg-slate-950/80 backdrop-blur-md rounded-lg py-1 px-2 text-center text-white text-[11px] font-mono border border-slate-800">
                       Baseline Ref ID: #{currentStudent?.student_id || 'N/A'}
                     </div>
                   </div>
 
                   {/* Student Details Card */}
-                  <div className="mt-md space-y-1 bg-white dark:bg-slate-900 rounded-xl p-sm text-xs border border-slate-200 dark:border-slate-700/60">
-                    <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
-                      <span className="text-slate-500">Student Name:</span>
-                      <span className="font-bold text-slate-800 dark:text-slate-200">{currentStudent?.full_name || "N/A"}</span>
+                  <div className="mt-md space-y-1 bg-slate-900/90 rounded-xl p-sm text-xs border border-slate-800 text-slate-200">
+                    <div className="flex justify-between py-1 border-b border-slate-800">
+                      <span className="text-slate-400">Student Name:</span>
+                      <span className="font-bold text-white">{currentStudent?.full_name || "N/A"}</span>
                     </div>
-                    <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
-                      <span className="text-slate-500">Enrollment No:</span>
-                      <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{currentStudent?.enrollment_no || "2026001"}</span>
+                    <div className="flex justify-between py-1 border-b border-slate-800">
+                      <span className="text-slate-400">Enrollment No:</span>
+                      <span className="font-mono font-bold text-white">{currentStudent?.enrollment_no || "2026001"}</span>
                     </div>
                     <div className="flex justify-between py-1">
-                      <span className="text-slate-500">Course / Sem:</span>
-                      <span className="font-medium text-slate-800 dark:text-slate-200">{currentStudent?.course || "B.Tech"} - Sem {currentStudent?.semester || "8"}</span>
+                      <span className="text-slate-400">Course / Sem:</span>
+                      <span className="font-medium text-white">{currentStudent?.course || "B.Tech"} - Sem {currentStudent?.semester || "8"}</span>
                     </div>
                   </div>
                 </div>
 
                 {!currentStudent?.profile_photo && (
-                  <div className="mt-md pt-sm border-t border-slate-200 dark:border-slate-700">
+                  <div className="mt-md pt-sm border-t border-slate-800">
                     <button
                       type="button"
                       onClick={handleCaptureBaselineInModal}
                       disabled={isCapturingBaseline}
-                      className="w-full py-sm px-md bg-primary text-white text-xs font-bold rounded-xl shadow hover:bg-primary/90 flex items-center justify-center gap-xs cursor-pointer"
+                      className="w-full py-sm px-md bg-blue-600 text-white text-xs font-bold rounded-xl shadow hover:bg-blue-500 flex items-center justify-center gap-xs cursor-pointer transition-all"
                     >
                       <span className="material-symbols-outlined !text-[16px]">photo_camera</span>
                       {isCapturingBaseline ? "Saving Baseline..." : "Capture Baseline Photo Now"}
@@ -808,18 +831,18 @@ const StudentDashboard = () => {
               </div>
 
               {/* Right Column: Live Camera Biometric Match Feed */}
-              <div className="bg-slate-100/80 dark:bg-slate-800/80 rounded-2xl p-md flex flex-col justify-between border border-slate-200 dark:border-slate-700">
+              <div className="bg-slate-950/75 rounded-2xl p-md flex flex-col justify-between border border-slate-800">
                 <div>
                   <div className="flex justify-between items-center mb-sm">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                       Live AI Biometric Scanner
                     </span>
-                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 border ${
                       verifyStatus === 'MATCHED'
-                        ? 'bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-400'
+                        ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
                         : verifyStatus === 'MISMATCH'
-                        ? 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400'
-                        : 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
+                        ? 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                        : 'bg-amber-500/15 text-amber-400 border-amber-500/30'
                     }`}>
                       <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></span>
                       {verifyStatus === 'MATCHED' ? 'MATCHED' : verifyStatus === 'MISMATCH' ? 'MISMATCH' : 'SCANNING'}
@@ -827,7 +850,7 @@ const StudentDashboard = () => {
                   </div>
 
                   {/* Video & Canvas Overlay */}
-                  <div className="aspect-[4/3] w-full max-w-[280px] mx-auto rounded-xl overflow-hidden bg-black relative shadow-md border-2 border-slate-700">
+                  <div className="aspect-[4/3] w-full max-w-[280px] mx-auto rounded-xl overflow-hidden bg-black relative shadow-md border-2 border-slate-800">
                     <video
                       ref={modalVideoRef}
                       autoPlay
@@ -845,48 +868,48 @@ const StudentDashboard = () => {
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <div className={`w-36 h-48 border-2 rounded-[50%] transition-colors duration-300 ${
                         verifyStatus === 'MATCHED'
-                          ? 'border-green-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]'
+                          ? 'border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]'
                           : verifyStatus === 'MISMATCH'
-                          ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]'
-                          : 'border-primary/70 animate-pulse'
+                          ? 'border-rose-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]'
+                          : 'border-blue-400/70 animate-pulse'
                       }`}></div>
                     </div>
-                    <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-mono px-2 py-0.5 rounded">
+                    <div className="absolute top-2 left-2 bg-slate-950/80 text-white text-[10px] font-mono px-2 py-0.5 rounded border border-slate-800">
                       FPS: 30 | AI Vision V4
                     </div>
                   </div>
 
                   {/* Live Match Metrics */}
-                  <div className="mt-md bg-white dark:bg-slate-900 rounded-xl p-sm text-xs border border-slate-200 dark:border-slate-700/60 space-y-2">
+                  <div className="mt-md bg-slate-900/90 rounded-xl p-sm text-xs border border-slate-800 space-y-2">
                     <div>
                       <div className="flex justify-between items-center mb-1">
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">Biometric Match Confidence</span>
+                        <span className="font-semibold text-slate-300">Biometric Match Confidence</span>
                         <span className={`font-mono font-bold text-sm ${
-                          matchConfidence >= 70 ? 'text-green-600 dark:text-green-400' : 'text-red-500'
+                          matchConfidence >= 70 ? 'text-emerald-400' : 'text-rose-400'
                         }`}>
                           {matchConfidence}%
                         </span>
                       </div>
-                      <div className="w-full h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
                         <div
                           className={`h-full transition-all duration-300 ${
                             matchConfidence >= 70
                               ? 'bg-gradient-to-r from-emerald-500 to-green-400'
-                              : 'bg-gradient-to-r from-red-500 to-amber-500'
+                              : 'bg-gradient-to-r from-rose-500 to-amber-500'
                           }`}
                           style={{ width: `${Math.min(100, Math.max(5, matchConfidence))}%` }}
                         ></div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
+                    <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-400 pt-1 border-t border-slate-800">
                       <div>
                         <span>Geometry Ratio: </span>
-                        <span className="font-bold text-slate-800 dark:text-slate-200">{matchMetrics.geometricSimilarity}%</span>
+                        <span className="font-bold text-slate-200">{matchMetrics.geometricSimilarity}%</span>
                       </div>
                       <div>
                         <span>Mesh Landmark: </span>
-                        <span className="font-bold text-slate-800 dark:text-slate-200">{matchMetrics.vectorSimilarity}%</span>
+                        <span className="font-bold text-slate-200">{matchMetrics.vectorSimilarity}%</span>
                       </div>
                     </div>
                   </div>
@@ -897,19 +920,19 @@ const StudentDashboard = () => {
             {/* Status & Impersonation Alert Banner */}
             <div className={`mt-lg p-md rounded-2xl border flex items-center gap-md ${
               verifyStatus === 'MATCHED'
-                ? 'bg-green-500/10 border-green-500/30 text-green-800 dark:text-green-300'
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
                 : verifyStatus === 'MISMATCH'
-                ? 'bg-red-500/10 border-red-500/30 text-red-800 dark:text-red-300'
+                ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
                 : verifyStatus === 'NO_BASELINE'
-                ? 'bg-blue-500/10 border-blue-500/30 text-blue-800 dark:text-blue-300'
-                : 'bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300'
+                ? 'bg-blue-500/10 border-blue-500/30 text-blue-300'
+                : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
             }`}>
               <span className={`material-symbols-outlined !text-[32px] shrink-0 ${
                 verifyStatus === 'MATCHED'
-                  ? 'text-green-600'
+                  ? 'text-emerald-400'
                   : verifyStatus === 'MISMATCH'
-                  ? 'text-red-600'
-                  : 'text-amber-600'
+                  ? 'text-rose-400'
+                  : 'text-amber-400'
               }`}>
                 {verifyStatus === 'MATCHED' ? 'check_circle' : verifyStatus === 'MISMATCH' ? 'gpp_bad' : 'shield'}
               </span>
@@ -923,7 +946,7 @@ const StudentDashboard = () => {
                     ? 'Baseline Registration Required'
                     : 'AI Scanning In Progress...'}
                 </p>
-                <p className="text-xs opacity-90 mt-0.5">
+                <p className="text-xs opacity-90 mt-0.5 text-slate-300">
                   {matchStatusText || "Please keep your head centered and look steadily at the screen."}
                 </p>
               </div>
@@ -934,7 +957,7 @@ const StudentDashboard = () => {
               <button
                 type="button"
                 onClick={() => setShowVerifyModal(false)}
-                className="w-full sm:w-auto px-lg py-md rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-sm hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-lg py-md rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm border border-slate-700 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -945,8 +968,8 @@ const StudentDashboard = () => {
                 disabled={verifyStatus !== 'MATCHED' || isExamStarting}
                 className={`w-full sm:w-auto px-xl py-md rounded-xl font-bold text-sm flex items-center justify-center gap-sm transition-all cursor-pointer shadow-lg ${
                   verifyStatus === 'MATCHED'
-                    ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:brightness-110 shadow-green-500/30 scale-100 hover:scale-[1.02]'
-                    : 'bg-slate-300 dark:bg-slate-800 text-slate-500 dark:text-slate-500 opacity-60 cursor-not-allowed'
+                    ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:brightness-110 shadow-emerald-500/30 scale-100 hover:scale-[1.02]'
+                    : 'bg-slate-800 text-slate-500 border border-slate-700 opacity-60 cursor-not-allowed'
                 }`}
               >
                 {isExamStarting ? (
@@ -969,19 +992,19 @@ const StudentDashboard = () => {
       )}
 
       {/* Footer */}
-      <footer className="relative w-full py-xl mt-auto border-t border-outline-variant/30 bg-surface-container-lowest dark:bg-surface-dim z-10">
+      <footer className="relative w-full py-xl mt-auto border-t border-slate-800/80 bg-slate-950/80 backdrop-blur-md z-10 text-slate-400">
         <div className="flex flex-col md:flex-row justify-between items-center px-gutter gap-lg max-w-container-max mx-auto">
           <div className="flex items-center gap-sm">
-            <span onClick={() => navigate('/')} className="font-title-lg text-title-lg font-bold text-primary cursor-pointer hover:opacity-80 transition-opacity">AI-Invigilator</span>
-            <span className="w-1 h-1 rounded-full bg-outline"></span>
-            <span className="font-body-md text-body-md text-on-surface-variant">Secure Session</span>
+            <span onClick={() => navigate('/')} className="font-title-lg text-title-lg font-bold text-blue-400 cursor-pointer hover:opacity-80 transition-opacity">AI-Invigilator</span>
+            <span className="w-1 h-1 rounded-full bg-slate-600"></span>
+            <span className="font-body-md text-body-md text-slate-400">Secure Session</span>
           </div>
           <div className="flex flex-wrap justify-center gap-lg">
-            <a className="text-on-surface-variant hover:text-primary transition-colors font-body-md" href="#">Privacy Policy</a>
-            <a className="text-on-surface-variant hover:text-primary transition-colors font-body-md" href="#">Terms of Service</a>
-            <a className="text-on-surface-variant hover:text-primary transition-colors font-body-md" href="#">Help Center</a>
+            <a className="text-slate-400 hover:text-blue-400 transition-colors font-body-md" href="#">Privacy Policy</a>
+            <a className="text-slate-400 hover:text-blue-400 transition-colors font-body-md" href="#">Terms of Service</a>
+            <a className="text-slate-400 hover:text-blue-400 transition-colors font-body-md" href="#">Help Center</a>
           </div>
-          <p className="font-body-md text-body-md text-on-surface-variant">© 2026 Secure. Objective. Sophisticated.</p>
+          <p className="font-body-md text-body-md text-slate-400">© 2026 Secure. Objective. Sophisticated.</p>
         </div>
       </footer>
     </div>

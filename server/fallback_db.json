@@ -1,0 +1,103 @@
+{
+  "admins": [
+    {
+      "admin_id": 1,
+      "name": "System Administrator",
+      "email": "admin@aiinvigilator.com",
+      "password": "$2b$10$TOX/3Y4CRbBBfyjF4iyYZeZMjeOvF6DFzW/RUwcxuPtGtIuJTettW",
+      "role": "admin",
+      "created_at": "2026-10-12T13:30:24.670Z"
+    },
+    {
+      "admin_id": 2,
+      "name": "Admin User",
+      "email": "admin@example.com",
+      "password": "$2b$10$TOX/3Y4CRbBBfyjF4iyYZeZMjeOvF6DFzW/RUwcxuPtGtIuJTettW",
+      "role": "admin",
+      "created_at": "2026-10-12T13:30:24.674Z"
+    }
+  ],
+  "students": [
+    {
+      "student_id": 1,
+      "enrollment_no": "ENR-2026-001",
+      "full_name": "Demo Student",
+      "email": "student@university.edu",
+      "password": "$2b$10$yZyEA4ID0wh4MEH.OivSlOEIeEeagAQ5UNaJcVMY9mCOMlttrndyO",
+      "phone": "9876543210",
+      "course": "Computer Science",
+      "semester": "8",
+      "profile_photo": null,
+      "created_at": "2026-10-12T13:30:24.674Z"
+    },
+    {
+      "student_id": 2,
+      "enrollment_no": "ENR-2026-002",
+      "full_name": "Demo Student 2",
+      "email": "student@example.com",
+      "password": "$2b$10$yZyEA4ID0wh4MEH.OivSlOEIeEeagAQ5UNaJcVMY9mCOMlttrndyO",
+      "phone": "9876543211",
+      "course": "Information Technology",
+      "semester": "8",
+      "profile_photo": null,
+      "created_at": "2026-10-12T13:30:24.674Z"
+    }
+  ],
+  "exams": [
+    {
+      "exam_id": 1,
+      "exam_name": "Artificial Intelligence Final Examination",
+      "duration_minutes": 60,
+      "total_marks": 50,
+      "description": "Comprehensive assessment covering Machine Learning and Computer Vision topics.",
+      "is_active": true
+    },
+    {
+      "exam_id": 2,
+      "exam_name": "General AI Assessment",
+      "duration_minutes": 45,
+      "total_marks": 30,
+      "description": "Standard mid-term assessment.",
+      "is_active": true
+    }
+  ],
+  "questions": [
+    {
+      "question_id": 1,
+      "exam_id": 1,
+      "question_text": "Which neural network architecture is primarily utilized for image recognition tasks?",
+      "option_a": "Recurrent Neural Network (RNN)",
+      "option_b": "Convolutional Neural Network (CNN)",
+      "option_c": "Long Short-Term Memory (LSTM)",
+      "option_d": "Feedforward Perceptron",
+      "correct_option": "B"
+    },
+    {
+      "question_id": 2,
+      "exam_id": 1,
+      "question_text": "What does the softmax activation function output?",
+      "option_a": "Binary classification flag",
+      "option_b": "Normalized probability distribution",
+      "option_c": "Unbounded continuous values",
+      "option_d": "Zero-centered gradients",
+      "correct_option": "B"
+    },
+    {
+      "question_id": 3,
+      "exam_id": 1,
+      "question_text": "Which loss function is commonly employed for multi-class classification?",
+      "option_a": "Mean Squared Error",
+      "option_b": "Categorical Cross-Entropy",
+      "option_c": "Hinge Loss",
+      "option_d": "Huber Loss",
+      "correct_option": "B"
+    }
+  ],
+  "student_exams": [],
+  "violations": [],
+  "violation_evidence": [],
+  "exam_incidents": [],
+  "results": [],
+  "live_sessions": [],
+  "student_messages": []
+}

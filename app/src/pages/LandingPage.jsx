@@ -132,8 +132,20 @@ const LandingPage = () => {
           </nav>
           <div className="flex items-center gap-md">
             <ThemeToggle />
-            <button onClick={() => navigate('/admin-login')} className="text-on-surface-variant font-medium hover:bg-primary/5 transition-colors px-4 py-2 rounded-lg cursor-pointer active:scale-95 transition-transform btn-animate">Admin Login</button>
-            <button onClick={() => navigate('/student-login')} className="gradient-button-primary text-white font-bold px-6 py-2 rounded-lg cursor-pointer active:scale-95 shadow-md btn-animate">Student Login</button>
+            <button 
+              onClick={() => navigate('/student-login')} 
+              className="gradient-button-primary text-white font-bold px-5 py-2 rounded-xl cursor-pointer active:scale-95 shadow-md btn-animate flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">school</span>
+              Student Portal
+            </button>
+            <button 
+              onClick={() => navigate('/admin-login')} 
+              className="text-slate-200 hover:text-white bg-slate-900/60 hover:bg-slate-800/80 font-medium px-4 py-2 rounded-xl border border-slate-700/80 cursor-pointer active:scale-95 transition-all flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+              Admin Portal
+            </button>
           </div>
         </div>
       </header>
@@ -176,9 +188,15 @@ const LandingPage = () => {
                 Smart AI-Based Online Examination Proctoring System. Experience clinical reliability with forward-thinking intelligence.
               </p>
               <div className="flex flex-wrap gap-md pt-md">
-                <button onClick={() => navigate('/student-login')} className="gradient-button-primary text-white px-8 py-4 rounded-xl font-semibold flex items-center gap-sm btn-animate shadow-xl border border-white/20">
-                  Launch Assessment <span className="material-symbols-outlined">arrow_forward</span>
+                <button onClick={() => navigate('/student-login')} className="gradient-button-primary text-white px-8 py-4 rounded-xl font-semibold flex items-center gap-sm btn-animate shadow-xl border border-white/20 cursor-pointer">
+                  <span className="material-symbols-outlined">school</span>
+                  Enter Student Portal <span className="material-symbols-outlined">arrow_forward</span>
                 </button>
+                <button onClick={() => navigate('/admin-login')} className="bg-slate-900/80 hover:bg-slate-800 text-white px-7 py-4 rounded-xl font-semibold border border-blue-500/30 flex items-center gap-sm btn-animate shadow-xl backdrop-blur-md transition-all cursor-pointer">
+                  <span className="material-symbols-outlined">admin_panel_settings</span>
+                  Admin Proctor Console
+                </button>
+
               </div>
               
               <div className="flex items-center gap-xl pt-lg">

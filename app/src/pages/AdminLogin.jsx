@@ -8,6 +8,7 @@ const AdminLogin = () => {
   const { adminLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isIdFocused, setIsIdFocused] = useState(false);
@@ -19,11 +20,16 @@ const AdminLogin = () => {
     setError('');
     setIsSubmitting(true);
     try {
-      await adminLogin({ email,
-    password });
+      await adminLogin({ email: email.trim(), password });
       navigate('/admin-dashboard');
     } catch (err) {
-      setError(err.message || 'Unable to sign in. Please try again.');
+      const msg =
+        err.response?.data?.message ||
+        (err.message === 'Network Error'
+          ? 'Network Error: Cannot connect to backend server. Make sure the backend server is running on http://localhost:5000.'
+          : err.message) ||
+        'Unable to sign in. Please try again.';
+      setError(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -97,17 +103,20 @@ const AdminLogin = () => {
       {/* TopAppBar */}
       <header className="fixed top-0 w-full z-50 bg-slate-900/80 backdrop-blur-xl border-b border-outline-variant/30 shadow-sm">
         <div className="flex justify-between items-center h-16 px-gutter max-w-container-max mx-auto">
-          <button type="button" onClick={() => navigate('/')} className="flex items-center gap-sm cursor-pointer hover:opacity-80 active:scale-95 transition-all">
-            <span className="material-symbols-outlined text-primary text-headline-md" style={{ fontVariationSettings: "'FILL' 1" }}>security</span>
-            <span className="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">AI-Invigilator</span>
-          </button>
+          <div className="flex items-center gap-sm">
+            <button type="button" onClick={() => navigate('/')} className="flex items-center gap-2 cursor-pointer hover:opacity-80 active:scale-95 transition-all">
+              <span className="material-symbols-outlined text-primary text-headline-md" style={{ fontVariationSettings: "'FILL' 1" }}>security</span>
+              <span className="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">AI-Invigilator</span>
+            </button>
+            <span className="text-xs uppercase tracking-wider font-bold text-indigo-400 bg-indigo-500/15 border border-indigo-500/30 px-2.5 py-0.5 rounded-full hidden sm:inline-block">
+              Admin Proctor Console
+            </span>
+          </div>
           <div className="flex items-center gap-md">
-            <button type="button" onClick={() => navigate('/')} className="flex items-center gap-xs text-slate-300 font-label-md text-label-md hover:bg-primary/5 transition-colors px-md py-sm rounded-lg cursor-pointer active:scale-95">
+            <button type="button" onClick={() => navigate('/')} className="flex items-center gap-xs text-slate-300 font-label-md text-label-md hover:bg-white/10 hover:text-white transition-colors px-md py-sm rounded-lg cursor-pointer active:scale-95">
               <span className="material-symbols-outlined text-[18px]">arrow_back</span>
               Back to Home
             </button>
-            <Link className="text-slate-300 font-label-md text-label-md hover:bg-primary/5 transition-colors px-md py-sm rounded-lg cursor-pointer active:scale-95" to="/student-login">Student Login</Link>
-            <a className="text-primary border-b-2 border-primary font-label-md text-label-md px-md py-sm cursor-default" href="#">Admin Login</a>
           </div>
         </div>
       </header>
@@ -168,21 +177,31 @@ const AdminLogin = () => {
                   >
                     Secure Password
                   </label>
-                  <a className="text-primary font-label-md text-label-md hover:underline" href="#">Forgot?</a>
+                  <Link className="text-primary font-label-md text-label-md hover:underline" to="/forgot-password">Forgot?</Link>
                 </div>
-                <div className="relative">
+                <div className="relative flex items-center">
                   <span className="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline text-[20px]">lock</span>
                   <input 
-                    className="w-full h-12 pl-11 pr-md rounded-xl border border-outline-variant bg-surface-container-low font-body-md text-body-md input-focus-glow transition-all" 
+                    className="w-full h-12 pl-11 pr-12 rounded-xl border border-outline-variant bg-surface-container-low font-body-md text-body-md input-focus-glow transition-all" 
                     id="password" 
                     placeholder="••••••••••••" 
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onFocus={() => setIsPasswordFocused(true)}
                     onBlur={() => setIsPasswordFocused(false)}
                     required
                   />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-md text-slate-400 hover:text-white transition-colors focus:outline-none flex items-center"
+                    aria-label="Toggle password visibility"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">
+                      {showPassword ? 'visibility' : 'visibility_off'}
+                    </span>
+                  </button>
                 </div>
               </div>
 

@@ -44,17 +44,18 @@ const ExaminationReports = () => {
     loadResults();
 }, []);
   const filtered = useMemo(() => {
+    const sTerm = (search || '').toLowerCase().trim();
     return reports.filter((r) => {
       const matchesSearch =
-        !search ||
-        r.full_name.toLowerCase().includes(search.toLowerCase()) ||
-        r.email.toLowerCase().includes(search.toLowerCase()) ||
-        r.exam_name.toLowerCase().includes(search.toLowerCase());
+        !sTerm ||
+        (r.full_name || '').toLowerCase().includes(sTerm) ||
+        (r.email || '').toLowerCase().includes(sTerm) ||
+        (r.exam_name || '').toLowerCase().includes(sTerm);
         
       const resultDateStr = r.submitted_at ? new Date(r.submitted_at).toISOString().split('T')[0] : '';
       const matchesDate = !dateFilter || resultDateStr === dateFilter;
       
-      const computedStatus = r.score >= 35 ? 'Passed' : 'Failed';
+      const computedStatus = Number(r.score) >= 35 ? 'Passed' : 'Failed';
       const matchesStatus = statusFilter === 'All' || computedStatus === statusFilter;
       
       return matchesSearch && matchesDate && matchesStatus;
@@ -64,7 +65,7 @@ const ExaminationReports = () => {
   const completed = filtered.length;
 
   const avgScore = Math.round(
-      filtered.reduce((sum, r) => sum + r.score, 0) /
+      filtered.reduce((sum, r) => sum + Number(r.score || 0), 0) /
       (filtered.length || 1)
   );
 

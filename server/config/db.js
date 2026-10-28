@@ -1,5 +1,5 @@
-const { Pool } = require("pg");
 const path = require("path");
+const { Pool } = require("pg");
 require("dotenv").config({ path: path.join(__dirname, "../.env") });
 
 let cloudConnectionString =
@@ -90,4 +90,8 @@ const pool = {
   end: () => Promise.all([cloudPool.end(), localPool.end()]),
 };
 
-module.exports = pool;
+pool.query("SELECT NOW()")
+  .then(() => console.log("✅ Database connected successfully via " + (cloudConnectionString ? "Supabase Cloud DB" : "Local PostgreSQL")))
+  .catch((err) => console.error("❌ Database connection error:", err.message));
+
+module.exports = pool;

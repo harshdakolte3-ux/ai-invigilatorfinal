@@ -401,8 +401,8 @@ exports.getDashboardStats = async (req, res) => {
             `)
         ]);
 
-        const onlineStudents = parseInt(onlineRes.rows[0].count, 10);
-        const activeExams = parseInt(examsRes.rows[0].count, 10);
+        const onlineStudents = parseInt(onlineRes.rows[0]?.count || 0, 10);
+        const activeExams = parseInt(examsRes.rows[0]?.count || 0, 10);
         const totalViolations = parseInt(violationsRes.rows[0].total, 10) || 0;
         const todaysAlerts = parseInt(violationsRes.rows[0].today, 10) || 0;
         const violationStats = statsRes.rows;

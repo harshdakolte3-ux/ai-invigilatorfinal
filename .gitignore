@@ -36,4 +36,5 @@ server/uploads/incidents/*
 !server/uploads/incidents/.gitkeep
 server/uploads/snapshots/*
 !server/uploads/snapshots/.gitkeep
+server/uploads/
 uploads/

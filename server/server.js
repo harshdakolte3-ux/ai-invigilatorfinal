@@ -1,6 +1,7 @@
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config();
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const pool = require("./config/db");
 
@@ -38,7 +39,7 @@ app.use(
   })
 );
 app.use(express.json({ limit: '10mb' }));
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 // Student APIs

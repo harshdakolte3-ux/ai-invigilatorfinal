@@ -1,4 +1,12 @@
 {
+  "name": "ai-invigilator",
+  "version": "1.0.0",
+  "scripts": {
+    "server": "node server/server.js",
+    "client": "npm --prefix app run dev",
+    "dev": "node -e \"const { spawn } = require('child_process'); spawn('npm', ['run', 'server'], { stdio: 'inherit', shell: true }); spawn('npm', ['run', 'client'], { stdio: 'inherit', shell: true });\"",
+    "start": "node server/server.js"
+  },
   "dependencies": {
     "face-api.js": "^0.22.2"
   }
