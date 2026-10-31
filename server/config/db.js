@@ -6,6 +6,9 @@ let cloudConnectionString =
   process.env.DATABASE_URL ||
   "postgresql://postgres.swcqnklgfprmpamibvxe:harshda%4020082817@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres";
 
+if (cloudConnectionString.includes(".pooler.supabase.com:5432")) {
+  cloudConnectionString = cloudConnectionString.replace(":5432", ":6543");
+}
 if (cloudConnectionString.includes("db.swcqnklgfprmpamibvxe.supabase.co")) {
   cloudConnectionString = cloudConnectionString
     .replace("db.swcqnklgfprmpamibvxe.supabase.co:5432", "aws-0-ap-northeast-1.pooler.supabase.com:6543")
@@ -17,7 +20,7 @@ const cloudPool = new Pool({
   ssl: {
     rejectUnauthorized: false,
   },
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 5000,
 });
 
 const localPool = new Pool({
@@ -94,4 +97,4 @@ pool.query("SELECT NOW()")
   .then(() => console.log("✅ Database connected successfully via " + (cloudConnectionString ? "Supabase Cloud DB" : "Local PostgreSQL")))
   .catch((err) => console.error("❌ Database connection error:", err.message));
 
-module.exports = pool;
+module.exports = pool;
