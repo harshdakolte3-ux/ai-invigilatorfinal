@@ -7,14 +7,13 @@ export async function registerStudent(data) {
 }
 
 // Student Login
-
 export async function loginStudent(credentials) {
   const response = await API.post("/auth/login", credentials);
-    localStorage.setItem("token", response.data.token);
-    localStorage.setItem("student", JSON.stringify(response.data.student));
-
-    return response.data.student;
+  localStorage.setItem("token", response.data.token);
+  localStorage.setItem("student", JSON.stringify(response.data.student));
+  return response.data.student;
 }
+
 // Student Logout
 export function logoutStudent() {
   localStorage.removeItem("token");
@@ -69,112 +68,86 @@ export async function startExam(data) {
 }
 
 export async function getQuestions(examId) {
-    const response = await API.get(`/exam/questions/${examId}`);
-    return response.data.questions;
+  const response = await API.get(`/exam/questions/${examId}`);
+  return response.data.questions;
 }
 
 export async function publishExam(data) {
-    const response = await API.post("/exam/publish", data);
-    return response.data;
+  const response = await API.post("/exam/publish", data);
+  return response.data;
 }
 
 export async function reportViolation(data) {
-    const response = await API.post("/exam/violation", data);
-    return response.data;
+  const response = await API.post("/exam/violation", data);
+  return response.data;
 }
 
 export async function logProctorIncident(data) {
-    const response = await API.post("/proctor/incident", data);
-    return response.data;
+  const response = await API.post("/proctor/incident", data);
+  return response.data;
 }
 
 export async function uploadScreenshot(data) {
-    const response = await API.post("/proctor/screenshot", data);
-    return response.data;
+  const response = await API.post("/proctor/screenshot", data);
+  return response.data;
 }
 
 export async function submitResult(data) {
-    const response = await API.post(
-        "/result/submit",
-        data
-    );
-
-    return response.data;
+  const response = await API.post("/result/submit", data);
+  return response.data;
 }
-export const getAllResults = async () => {
-    const response = await fetch(
-        "http://localhost:5000/api/result/all"
-    );
 
-    return await response.json();
+export const getAllResults = async () => {
+  const response = await API.get("/result/all");
+  return response.data;
 };
 
 export const getAllIncidents = async () => {
-    const response = await fetch("http://localhost:5000/api/proctor/incidents");
-    return await response.json();
+  const response = await API.get("/proctor/incidents");
+  return response.data;
 };
 
 export const updateIncidentStatus = async (id, status) => {
-    const response = await fetch(`http://localhost:5000/api/proctor/incident/${id}/status`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status })
-    });
-    return await response.json();
+  const response = await API.put(`/proctor/incident/${id}/status`, { status });
+  return response.data;
 };
 
 export const pingLiveSession = async (data) => {
-    const response = await fetch("http://localhost:5000/api/proctor/ping", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-    });
-    return await response.json();
+  const response = await API.post("/proctor/ping", data);
+  return response.data;
 };
 
 export const getLiveSessions = async () => {
-    const response = await fetch("http://localhost:5000/api/proctor/live");
-    return await response.json();
+  const response = await API.get("/proctor/live");
+  return response.data;
 };
 
 export const getStudentLiveFeed = async (studentId) => {
-    const response = await fetch(`http://localhost:5000/api/proctor/live-feed/${studentId}`);
-    return await response.json();
+  const response = await API.get(`/proctor/live-feed/${studentId}`);
+  return response.data;
 };
 
 export const endLiveSession = async (studentId) => {
-    const response = await fetch(`http://localhost:5000/api/proctor/live/${studentId}`, {
-        method: "DELETE"
-    });
-    return await response.json();
+  const response = await API.delete(`/proctor/live/${studentId}`);
+  return response.data;
 };
 
 export const sendNotification = async (studentId, message) => {
-    const response = await fetch(`http://localhost:5000/api/proctor/notify/${studentId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message })
-    });
-    return await response.json();
+  const response = await API.post(`/proctor/notify/${studentId}`, { message });
+  return response.data;
 };
 
 export const flagLiveSession = async (studentId) => {
-    const response = await fetch(`http://localhost:5000/api/proctor/flag/${studentId}`, {
-        method: "POST"
-    });
-    return await response.json();
+  const response = await API.post(`/proctor/flag/${studentId}`);
+  return response.data;
 };
 
 export const getDashboardStats = async () => {
-    const response = await fetch("http://localhost:5000/api/proctor/dashboard");
-    return await response.json();
+  const response = await API.get("/proctor/dashboard");
+  return response.data;
 };
 
 export const createSession = async (data) => {
-    const response = await fetch("http://localhost:5000/api/proctor/create-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-    });
-    return await response.json();
-};
+  const response = await API.post("/proctor/create-session", data);
+  return response.data;
+};

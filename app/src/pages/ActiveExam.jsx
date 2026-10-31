@@ -143,7 +143,7 @@ const ActiveExam = () => {
     // Send to backend API (both violations and proctor incidents tables)
     if (student) {
         logProctorIncident({
-            studentId: student.student_id,
+            studentId: student?.student_id || student?.id || 1,
             examId: 2,
             type: type,
             message: logMessage || title,
@@ -154,7 +154,7 @@ const ActiveExam = () => {
                 if (base64) {
                     uploadScreenshot({
                         incidentId: res.id,
-                        studentId: student.student_id,
+                        studentId: student?.student_id || student?.id || 1,
                         examId: 2,
                         imageBase64: base64
                     }).catch(err => console.error("Failed to upload screenshot:", err));
@@ -843,7 +843,7 @@ useEffect(() => {
 
             const res = await pingLiveSession({
                 studentId: student.student_id,
-                examName: "Computer Fundamentals Finals",
+                examName: "CS502: Advanced Neural Networks",
                 status: status,
                 aiConfidence: aiConfidence,
                 faceStatus: faceStatus,

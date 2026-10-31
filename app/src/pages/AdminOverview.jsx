@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth.js';
 import AdminSidebar from '../components/admin/AdminSidebar.jsx';
 import ThemeToggle from '../components/ThemeToggle';
 import { getDashboardStats, createSession } from '../services/authService';
+import { SERVER_BASE_URL } from '../services/api.js';
 
 let cachedStats = null;
 
@@ -53,7 +54,7 @@ const AdminOverview = ({ protectedMode = false }) => {
   };
 
   const handleExport = () => {
-    window.open('http://localhost:5000/api/proctor/export', '_blank');
+    window.open(`${SERVER_BASE_URL}/api/proctor/export`, '_blank');
   };
 
   const handleCreateSession = async () => {
@@ -238,7 +239,7 @@ const AdminOverview = ({ protectedMode = false }) => {
                           <div className="proctor-video-container">
                             <img 
                               className="w-full h-full object-cover" 
-                              src={`http://localhost:5000/uploads/snapshots/student_${student.id}.jpg?t=${Date.now()}`} 
+                              src={`${SERVER_BASE_URL}/uploads/snapshots/student_${student.id}.jpg?t=${Date.now()}`} 
                               onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }}
                               onLoad={(e) => { e.target.style.display = 'block'; e.target.nextSibling.style.display = 'none'; }}
                               alt="Live feed" 

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
+import { SERVER_BASE_URL } from '../../services/api.js';
 import {
   getLiveSessions,
   getStudentLiveFeed,
@@ -401,7 +402,7 @@ const LiveMonitoring = () => {
               {/* Snapshot / Live Feed Box */}
               <div className="relative aspect-video bg-slate-950 overflow-hidden">
                 <img
-                  src={`http://localhost:5000/uploads/snapshots/student_${student.id}.jpg?t=${liveStreamTick}`}
+                  src={`${SERVER_BASE_URL}/uploads/snapshots/student_${student.id}.jpg?t=${liveStreamTick}`}
                   onError={(e) => {
                     e.target.style.display = 'none';
                     if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
@@ -653,7 +654,7 @@ const LiveMonitoring = () => {
                   {/* Tab 1: Webcam Feed */}
                   {streamTab === 'webcam' && (
                     <img
-                      src={`http://localhost:5000/uploads/snapshots/student_${selectedStudent.id}.jpg?t=${liveStreamTick}`}
+                      src={`${SERVER_BASE_URL}/uploads/snapshots/student_${selectedStudent.id}.jpg?t=${liveStreamTick}`}
                       onError={(e) => {
                         e.target.style.display = 'none';
                         if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
@@ -670,7 +671,7 @@ const LiveMonitoring = () => {
                   {/* Tab 2: Screen Share Feed */}
                   {streamTab === 'screen' && (
                     <img
-                      src={`http://localhost:5000/uploads/snapshots/student_${selectedStudent.id}_screen.jpg?t=${liveStreamTick}`}
+                      src={`${SERVER_BASE_URL}/uploads/snapshots/student_${selectedStudent.id}_screen.jpg?t=${liveStreamTick}`}
                       onError={(e) => {
                         e.target.style.display = 'none';
                         if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
@@ -712,7 +713,7 @@ const LiveMonitoring = () => {
                         </span>
                         <div className="w-full h-44 rounded-lg overflow-hidden border border-primary/40">
                           <img
-                            src={`http://localhost:5000/uploads/snapshots/student_${selectedStudent.id}.jpg?t=${liveStreamTick}`}
+                            src={`${SERVER_BASE_URL}/uploads/snapshots/student_${selectedStudent.id}.jpg?t=${liveStreamTick}`}
                             alt="Live feed"
                             className="w-full h-full object-cover"
                           />
