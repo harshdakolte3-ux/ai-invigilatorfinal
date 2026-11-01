@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
 import { getAllIncidents, updateIncidentStatus as updateIncidentStatusAPI } from '../../services/authService';
+import { SERVER_BASE_URL } from '../../services/api.js';
 
 const VIOLATION_TYPES_LIST = [
   'TAB_SWITCH',
@@ -30,6 +31,7 @@ const IntegrityViolations = () => {
   const [page, setPage] = useState(1);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [toast, setToast] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const loadIncidents = async () => {
     try {
@@ -93,7 +95,7 @@ const IntegrityViolations = () => {
     const csvContent = [
       headers.join(","),
       ...filtered.map(v => {
-        const imgLink = v.image_filename ? `http://localhost:5000/uploads/incidents/${v.image_filename}` : "No Image";
+        const imgLink = v.image_filename ? `${SERVER_BASE_URL}/uploads/incidents/${v.image_filename}` : "No Image";
         return `"${v.studentName}","${v.type}","${new Date(v.timestamp).toLocaleString()}","${v.status}","${imgLink}"`;
       })
     ].join("\n");
@@ -210,7 +212,19 @@ const IntegrityViolations = () => {
                   <td className="px-lg py-md">
                     {v.image_filename ? (
                       <div className="w-16 h-10 rounded-lg overflow-hidden bg-slate-800">
-                        <img className="w-full h-full object-cover" src={`http://localhost:5000/uploads/incidents/${v.image_filename}`} alt="Evidence thumbnail" />
+                        <img
+                          className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
+                          src={`${SERVER_BASE_URL}/uploads/incidents/${v.image_filename}`}
+                          alt="Evidence thumbnail"
+                          onClick={() => setSelectedImage(`${SERVER_BASE_URL}/uploads/incidents/${v.image_filename}`)}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                        <div style={{ display: 'none' }} className="w-full h-full items-center justify-center text-[10px] text-slate-500 bg-slate-900">
+                          No Preview
+                        </div>
                       </div>
                     ) : (
                       <span className="text-slate-300/50 text-[11px]">No Image</span>
@@ -275,6 +289,34 @@ const IntegrityViolations = () => {
       {toast && (
         <div className="fixed bottom-lg left-1/2 -translate-x-1/2 z-50 toast-animate bg-on-surface text-surface px-lg py-sm rounded-xl shadow-2xl font-label-md text-label-md">
           {toast}
+        </div>
+      )}
+
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-md cursor-pointer"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div
+            className="relative max-w-2xl w-full bg-slate-900 p-md rounded-2xl border border-slate-700 shadow-2xl cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-md border-b border-slate-800 pb-sm">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[20px]">verified</span>
+                <h4 className="text-white font-semibold text-sm">Violation Snapshot Evidence</h4>
+              </div>
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            <div className="rounded-xl overflow-hidden bg-black flex items-center justify-center max-h-[70vh]">
+              <img src={selectedImage} alt="Full Evidence" className="w-full h-full object-contain" />
+            </div>
+          </div>
         </div>
       )}
     </AdminLayout>

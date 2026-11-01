@@ -39,7 +39,11 @@ exports.uploadScreenshot = async (req, res) => {
         const base64Data = imageBase64.replace(/^data:image\/jpeg;base64,/, "").replace(/^data:image\/png;base64,/, "");
 
         const filename = `incident_${studentId}_${examId}_${incidentId}_${Date.now()}.jpg`;
-        const filepath = path.join(__dirname, "..", "uploads", "incidents", filename);
+        const incidentsDir = path.join(__dirname, "..", "uploads", "incidents");
+        if (!fs.existsSync(incidentsDir)) {
+            fs.mkdirSync(incidentsDir, { recursive: true });
+        }
+        const filepath = path.join(incidentsDir, filename);
 
         fs.writeFileSync(filepath, base64Data, 'base64');
 
