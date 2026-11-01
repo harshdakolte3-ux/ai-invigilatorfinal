@@ -149,6 +149,14 @@ const ActiveExam = () => {
             message: logMessage || title,
             timestamp: new Date().toISOString()
         }).then(res => {
+            if (res && res.isTerminated) {
+                if (videoRef.current && videoRef.current.srcObject) {
+                    try { videoRef.current.srcObject.getTracks().forEach(t => t.stop()); } catch (e) {}
+                }
+                alert("Your exam session has been terminated by the Proctor / Administrator.");
+                navigate('/student-dashboard');
+                return;
+            }
             if (res && res.id) {
                 const base64 = captureEvidence();
                 if (base64) {
@@ -857,7 +865,27 @@ useEffect(() => {
                 screenSnapshot: screenSnapshot
             });
 
+            if (res && (res.isTerminated || res.serverStatus === 'Terminated')) {
+                clearInterval(intervalId);
+                if (videoRef.current && videoRef.current.srcObject) {
+                    try { videoRef.current.srcObject.getTracks().forEach(t => t.stop()); } catch (e) {}
+                }
+                alert("Your exam session has been terminated by the Proctor / Administrator.");
+                navigate('/student-dashboard');
+                return;
+            }
+
             if (res && res.messages && res.messages.length > 0) {
+                const termMsg = res.messages.find(m => m.message === 'TERMINATE_EXAM');
+                if (termMsg) {
+                    clearInterval(intervalId);
+                    if (videoRef.current && videoRef.current.srcObject) {
+                        try { videoRef.current.srcObject.getTracks().forEach(t => t.stop()); } catch (e) {}
+                    }
+                    alert("Your exam session has been terminated by the Proctor / Administrator.");
+                    navigate('/student-dashboard');
+                    return;
+                }
                 res.messages.forEach(msg => {
                     setActiveWarning({
                         type: 'PROCTOR_MESSAGE',

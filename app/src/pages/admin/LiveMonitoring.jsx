@@ -899,9 +899,12 @@ const LiveMonitoring = () => {
                     type="button"
                     onClick={async () => {
                       if (confirm(`Are you sure you want to force terminate the exam session for ${selectedStudent.name}?`)) {
-                        await endLiveSession(selectedStudent.id);
-                        setToast(`Session terminated for ${selectedStudent.name}.`);
+                        const targetId = selectedStudent.id;
+                        const targetName = selectedStudent.name;
+                        await endLiveSession(targetId);
+                        setToast(`Session terminated for ${targetName}.`);
                         setSelectedStudent(null);
+                        setStudents((prev) => prev.filter((s) => s.id !== targetId));
                         loadSessions();
                       }
                     }}

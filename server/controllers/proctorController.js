@@ -5,6 +5,15 @@ const path = require("path");
 exports.logIncident = async (req, res) => {
     try {
         const { studentId, examId, type, message, timestamp } = req.body;
+        const sid = studentId ? parseInt(studentId, 10) : 1;
+
+        // Ignore incidents if student is terminated
+        try {
+            const isTerm = await pool.query("SELECT * FROM terminated_sessions WHERE student_id = $1", [sid || 1]);
+            if (isTerm.rows.length > 0) {
+                return res.json({ success: true, message: "Session already terminated", isTerminated: true });
+            }
+        } catch (e) {}
 
         const result = await pool.query(
             `INSERT INTO exam_incidents (student_id, exam_id, incident_type, message)
@@ -147,6 +156,23 @@ exports.pingSession = async (req, res) => {
         }
 
         if (!sid) sid = 1;
+
+        // Check if student's exam has been terminated by admin
+        try {
+            const termCheck = await pool.query(
+                "SELECT * FROM terminated_sessions WHERE student_id = $1",
+                [sid]
+            );
+            if (termCheck.rows.length > 0) {
+                await pool.query("DELETE FROM live_sessions WHERE student_id = $1", [sid]);
+                return res.json({
+                    success: true,
+                    isTerminated: true,
+                    serverStatus: 'Terminated',
+                    messages: [{ message: 'TERMINATE_EXAM' }]
+                });
+            }
+        } catch (tErr) {}
 
         // 1. Update live session
         await pool.query(
@@ -342,8 +368,21 @@ exports.getStudentLiveFeed = async (req, res) => {
 exports.endSession = async (req, res) => {
     try {
         const { studentId } = req.params;
-        await pool.query("DELETE FROM live_sessions WHERE student_id = $1", [studentId]);
-        res.json({ success: true });
+        const sid = parseInt(studentId, 10);
+        if (sid) {
+            await pool.query(
+                `INSERT INTO terminated_sessions (student_id, terminated_at) 
+                 VALUES ($1, NOW()) 
+                 ON CONFLICT (student_id) DO UPDATE SET terminated_at = NOW()`,
+                [sid]
+            );
+            await pool.query("DELETE FROM live_sessions WHERE student_id = $1", [sid]);
+            await pool.query(
+                "INSERT INTO student_messages (student_id, message) VALUES ($1, $2)",
+                [sid, 'TERMINATE_EXAM']
+            );
+        }
+        res.json({ success: true, isTerminated: true });
     } catch (err) {
         console.error("Error ending session:", err);
         res.status(500).json({ success: false });

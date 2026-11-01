@@ -4,6 +4,9 @@ const pool = require("../config/db");
 exports.startExam = async (req, res) => {
     try {
         const { student_id, exam_name, examId, exam_id } = req.body;
+        if (student_id) {
+            await pool.query("DELETE FROM terminated_sessions WHERE student_id = $1", [student_id]).catch(() => {});
+        }
         const targetId = examId || exam_id;
 
         let exam;
