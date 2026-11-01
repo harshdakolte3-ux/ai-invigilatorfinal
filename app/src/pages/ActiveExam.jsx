@@ -75,6 +75,7 @@ const ActiveExam = () => {
   const isTerminatedRef = useRef(false);
   const mediaStreamRef = useRef(null);
   const pingIntervalRef = useRef(null);
+  const lastFullscreenWarningTimeRef = useRef(0);
 
   const handleTerminateAndExit = useCallback(() => {
     if (isTerminatedRef.current) return;
@@ -120,14 +121,20 @@ const ActiveExam = () => {
       try { document.exitFullscreen().catch(() => {}); } catch (e) {}
     }
 
-    // Set one-time notice in sessionStorage to be displayed on Student Dashboard
-    sessionStorage.setItem(
-      "exam_terminated_notice",
-      "Your exam session has been terminated by the Proctor / Administrator."
-    );
+    // Set one-time notice in sessionStorage safely
+    try {
+      sessionStorage.setItem(
+        "exam_terminated_notice",
+        "Your exam session has been terminated by the Proctor / Administrator."
+      );
+    } catch (e) {}
 
-    // Hard redirect to student dashboard immediately without blocking alerts
-    window.location.replace('/student-dashboard');
+    // Hard redirect to student dashboard immediately
+    try {
+      window.location.replace('/student-dashboard');
+    } catch (e) {
+      window.location.href = '/student-dashboard';
+    }
   }, []);
 
   // COCO SSD Object Detection
@@ -184,11 +191,14 @@ const ActiveExam = () => {
         setLastIncidentTime(now);
     }
 
-    // Show UI Warning ONLY for fullscreen exit
+    // Show UI Warning ONLY for fullscreen exit (debounced by 15 seconds)
     if (type === 'FULLSCREEN_EXIT') {
-        setActiveWarning({ type, title, message: logMessage });
-        setIsWarningDismissed(false);
-        setIsWarningHidden(false);
+        if (now - lastFullscreenWarningTimeRef.current >= 15000) {
+            lastFullscreenWarningTimeRef.current = now;
+            setActiveWarning({ type, title, message: logMessage });
+            setIsWarningDismissed(false);
+            setIsWarningHidden(false);
+        }
     }
     
     // Log to local console
@@ -742,6 +752,13 @@ useEffect(() => {
 // console.log("Current question:", question);
 // console.log("Flagged questions:", flaggedQuestions);
     const dismissWarning = () => {
+        if (activeWarning?.message === 'TERMINATE_EXAM' || (typeof activeWarning?.message === 'string' && activeWarning.message.toUpperCase().includes('TERMINAT'))) {
+            handleTerminateAndExit();
+            return;
+        }
+        if (activeWarning?.type === 'FULLSCREEN_EXIT') {
+            enterFullScreen().catch(() => {});
+        }
         setIsWarningDismissed(true);
         setTimeout(() => {
             setIsWarningHidden(true);
@@ -885,13 +902,14 @@ useEffect(() => {
                 screenSnapshot: screenSnapshot
             });
 
-            if (res && (res.isTerminated || res.serverStatus === 'Terminated' || (res.messages && res.messages.some(m => m.message === 'TERMINATE_EXAM')))) {
+            if (res && (res.isTerminated || res.serverStatus === 'Terminated' || (res.messages && res.messages.some(m => typeof m.message === 'string' && m.message.toUpperCase().includes('TERMINAT'))))) {
                 handleTerminateAndExit();
                 return;
             }
 
             if (res && res.messages && res.messages.length > 0) {
-                res.messages.forEach(msg => {
+                const normalMessages = res.messages.filter(m => typeof m.message === 'string' && !m.message.toUpperCase().includes('TERMINAT'));
+                normalMessages.forEach(msg => {
                     setActiveWarning({
                         type: 'PROCTOR_MESSAGE',
                         title: 'Message from Proctor',
