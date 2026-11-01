@@ -39,7 +39,6 @@ app.use(
   })
 );
 app.use(express.json({ limit: '10mb' }));
-const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 

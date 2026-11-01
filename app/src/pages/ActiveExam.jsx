@@ -154,7 +154,7 @@ const ActiveExam = () => {
                     try { videoRef.current.srcObject.getTracks().forEach(t => t.stop()); } catch (e) {}
                 }
                 alert("Your exam session has been terminated by the Proctor / Administrator.");
-                navigate('/student-dashboard');
+                window.location.replace('/student-dashboard');
                 return;
             }
             if (res && res.id) {
@@ -850,7 +850,7 @@ useEffect(() => {
             }
 
             const res = await pingLiveSession({
-                studentId: student.student_id,
+                studentId: student?.student_id || student?.id || 1,
                 examName: "CS502: Advanced Neural Networks",
                 status: status,
                 aiConfidence: aiConfidence,
