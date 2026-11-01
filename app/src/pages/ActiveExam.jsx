@@ -72,6 +72,63 @@ const ActiveExam = () => {
 
   // MediaPipe Face Landmarker
   const faceLandmarkerRef = useRef(null);
+  const isTerminatedRef = useRef(false);
+  const mediaStreamRef = useRef(null);
+  const pingIntervalRef = useRef(null);
+
+  const handleTerminateAndExit = useCallback(() => {
+    if (isTerminatedRef.current) return;
+    isTerminatedRef.current = true;
+
+    // Clear background interval timers immediately
+    if (mediapipeIntervalRef.current) clearInterval(mediapipeIntervalRef.current);
+    if (cocossdIntervalRef.current) clearInterval(cocossdIntervalRef.current);
+    if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
+
+    // Immediately stop & release all camera and microphone tracks
+    if (mediaStreamRef.current) {
+      try {
+        mediaStreamRef.current.getTracks().forEach((track) => {
+          track.stop();
+          track.enabled = false;
+        });
+        mediaStreamRef.current = null;
+      } catch (e) {}
+    }
+
+    if (videoRef.current) {
+      try {
+        if (videoRef.current.srcObject) {
+          videoRef.current.srcObject.getTracks().forEach((track) => {
+            track.stop();
+            track.enabled = false;
+          });
+          videoRef.current.srcObject = null;
+        }
+        videoRef.current.pause();
+      } catch (e) {}
+    }
+
+    if (audioDetectorRef.current) {
+      try {
+        audioDetectorRef.current.stop();
+        audioDetectorRef.current = null;
+      } catch (e) {}
+    }
+
+    if (document.fullscreenElement) {
+      try { document.exitFullscreen().catch(() => {}); } catch (e) {}
+    }
+
+    // Set one-time notice in sessionStorage to be displayed on Student Dashboard
+    sessionStorage.setItem(
+      "exam_terminated_notice",
+      "Your exam session has been terminated by the Proctor / Administrator."
+    );
+
+    // Hard redirect to student dashboard immediately without blocking alerts
+    window.location.replace('/student-dashboard');
+  }, []);
 
   // COCO SSD Object Detection
   const modelRef = useRef(null);
@@ -114,6 +171,7 @@ const ActiveExam = () => {
 
   // Utility to report incidents to backend and UI
   const reportIncident = async (type, title, severity = 'MEDIUM', logMessage = '', bypassDebounce = false) => {
+    if (isTerminatedRef.current) return;
     const student = JSON.parse(localStorage.getItem('student'));
     
     const now = Date.now();
@@ -150,11 +208,7 @@ const ActiveExam = () => {
             timestamp: new Date().toISOString()
         }).then(res => {
             if (res && res.isTerminated) {
-                if (videoRef.current && videoRef.current.srcObject) {
-                    try { videoRef.current.srcObject.getTracks().forEach(t => t.stop()); } catch (e) {}
-                }
-                alert("Your exam session has been terminated by the Proctor / Administrator.");
-                window.location.replace('/student-dashboard');
+                handleTerminateAndExit();
                 return;
             }
             if (res && res.id) {
@@ -239,8 +293,14 @@ useEffect(() => {
                 }
             });
 
+            mediaStreamRef.current = stream;
+
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
+                videoRef.current.onloadedmetadata = () => {
+                    videoRef.current.play().catch(() => {});
+                    console.log("Camera Ready");
+                };
             }
 
             // Initialize Multi-Modal Audio & Whisper / Speech Detector
@@ -356,8 +416,17 @@ useEffect(() => {
     startAudioVideo();
 
     return () => {
+        if (mediaStreamRef.current) {
+            try {
+                mediaStreamRef.current.getTracks().forEach(t => {
+                    t.stop();
+                    t.enabled = false;
+                });
+            } catch (e) {}
+            mediaStreamRef.current = null;
+        }
         if (audioDetectorRef.current) {
-            audioDetectorRef.current.stop();
+            try { audioDetectorRef.current.stop(); } catch (e) {}
             audioDetectorRef.current = null;
         }
     };
@@ -370,36 +439,7 @@ useEffect(() => {
 
 
 
-useEffect(() => {
-    const handleFullScreenChange = () => {
-        if (!document.fullscreenElement) {
-            setIncidentLog((prev) => [
-                {
-                    time: new Date().toLocaleTimeString(),
-                    text: "Full-screen mode exited",
-                    isError: true,
-                },
-                ...prev,
-            ]);
-
-            alert(
-                "Warning! Full-screen mode must remain enabled."
-            );
-        }
-    };
-
-    document.addEventListener(
-        "fullscreenchange",
-        handleFullScreenChange
-    );
-
-    return () => {
-        document.removeEventListener(
-            "fullscreenchange",
-            handleFullScreenChange
-        );
-    };
-}, []);
+// Fullscreen monitoring handled by proctor listener below
 // useEffect(() => {
 //     const loadMediaPipe = async () => {
 //         try {
@@ -439,6 +479,7 @@ useEffect(() => {
 
 useEffect(() => {
     const handleVisibilityChange = () => {
+        if (isTerminatedRef.current) return;
         if (document.hidden) {
             reportIncident('TAB_SWITCH', 'Tab Switched', 'HIGH', 'You switched to another tab or application.', true);
         }
@@ -459,6 +500,7 @@ useEffect(() => {
 
 useEffect(() => {
     const handleFullScreenChange = () => {
+        if (isTerminatedRef.current) return;
         const isCurrentlyFullScreen = document.fullscreenElement !== null;
         setIsFullScreen(isCurrentlyFullScreen);
 
@@ -482,32 +524,7 @@ useEffect(() => {
 
 
 
-useEffect(() => {
-    const startCamera = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: true,
-                audio: false,
-            });
-
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-                videoRef.current.onloadedmetadata = () => {
-    videoRef.current.play();
-    console.log("Camera Ready");
-};
-            }
-        } catch (error) {
-            console.log(error);
-
-            setCameraError(
-                "Camera permission denied."
-            );
-        }
-    };
-
-    startCamera();
-}, []);
+// Camera stream unified with audio stream in startAudioVideo above
 
 useEffect(() => {
     const loadModels = async () => {
@@ -549,6 +566,7 @@ useEffect(() => {
 }, []);
 
 const detectObjectIncidents = async () => {
+    if (isTerminatedRef.current) return;
     if (!videoRef.current || !modelRef.current || !canvasRef.current) return;
     const video = videoRef.current;
     if (video.videoWidth === 0 || video.videoHeight === 0) return;
@@ -574,6 +592,7 @@ const detectObjectIncidents = async () => {
 };
 
 const detectFaceIncidents = () => {
+    if (isTerminatedRef.current) return;
     if (!videoRef.current || !faceLandmarkerRef.current || !canvasRef.current) return;
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -758,6 +777,7 @@ useEffect(() => {
     if (!student || !modelsLoaded) return;
 
     const pingBackend = async () => {
+        if (isTerminatedRef.current) return;
         try {
             // 1. Calculate dynamic real-time AI Confidence Score (0 - 100%)
             let aiConfidence = 98;
@@ -865,27 +885,12 @@ useEffect(() => {
                 screenSnapshot: screenSnapshot
             });
 
-            if (res && (res.isTerminated || res.serverStatus === 'Terminated')) {
-                clearInterval(intervalId);
-                if (videoRef.current && videoRef.current.srcObject) {
-                    try { videoRef.current.srcObject.getTracks().forEach(t => t.stop()); } catch (e) {}
-                }
-                alert("Your exam session has been terminated by the Proctor / Administrator.");
-                navigate('/student-dashboard');
+            if (res && (res.isTerminated || res.serverStatus === 'Terminated' || (res.messages && res.messages.some(m => m.message === 'TERMINATE_EXAM')))) {
+                handleTerminateAndExit();
                 return;
             }
 
             if (res && res.messages && res.messages.length > 0) {
-                const termMsg = res.messages.find(m => m.message === 'TERMINATE_EXAM');
-                if (termMsg) {
-                    clearInterval(intervalId);
-                    if (videoRef.current && videoRef.current.srcObject) {
-                        try { videoRef.current.srcObject.getTracks().forEach(t => t.stop()); } catch (e) {}
-                    }
-                    alert("Your exam session has been terminated by the Proctor / Administrator.");
-                    navigate('/student-dashboard');
-                    return;
-                }
                 res.messages.forEach(msg => {
                     setActiveWarning({
                         type: 'PROCTOR_MESSAGE',
@@ -901,10 +906,12 @@ useEffect(() => {
         }
     };
 
-    const intervalId = setInterval(pingBackend, 2000);
+    pingIntervalRef.current = setInterval(pingBackend, 2000);
     pingBackend(); // Initial ping
 
-    return () => clearInterval(intervalId);
+    return () => {
+        if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
+    };
 }, [modelsLoaded, incidentLog, faceStatus, eyeStatus, headDirection, phoneDetected, currentQuestion, answers]);
 
 const handleSubmitExam = async () => {

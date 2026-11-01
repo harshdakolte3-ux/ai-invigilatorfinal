@@ -36,6 +36,16 @@ const StudentDashboard = () => {
   const { student, studentLogout } = useAuth();
   const currentStudent = student || JSON.parse(localStorage.getItem('student') || '{}');
 
+  useEffect(() => {
+    const termNotice = sessionStorage.getItem('exam_terminated_notice');
+    if (termNotice) {
+      sessionStorage.removeItem('exam_terminated_notice');
+      setTimeout(() => {
+        alert(termNotice);
+      }, 350);
+    }
+  }, []);
+
   const handleLogout = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
